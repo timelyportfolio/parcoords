@@ -1,6 +1,10 @@
+Note, this project contains varying licenses due to multiple dependencies.  Please see LICENSE in the dependencies or the source code for a desciption of the applicable license.
+
+For the noncovered components of this R package, the following license applies:
+
 The MIT License (MIT)
 
-Copyright (c) 2015 
+Copyright (c) 2015
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
