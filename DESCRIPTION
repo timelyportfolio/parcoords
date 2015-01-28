@@ -1,9 +1,22 @@
 Package: parcoords
-Title: What the package does (one line)
+Title: htmlwidget for d3.js parallel coordinates chart
 Version: 0.1
-Authors@R: "First Last <first.last@example.com> [aut, cre]"
-Description: What the package does (one paragraph)
+Authors@R: c( person("Mike", "Bostock", role = c("aut", "cph"), comment =
+    "d3.js library in htmlwidgets/lib, http://d3js.org"), person("Kai", "Chang"
+    ,role = c( "aut","cph" ), comment = "parallel coordinates reusable chart,
+    https://github.com/syntagmatic/parallel-coordinates"),
+    person("Kenton","Russell", role = c("aut","cre"), comment = "R interface",
+    email = "kent.russell@timelyportfolio.com") )
+Maintainer: Kenton Russell <kent.russell@timelyportfolio.com>
+Description: Create interactive parallel coordinates charts with this
+    htmlwidget wrapper for d3.js
+    \href{http://syntagmatic.github.io/parallel-coordinates/}{parallel-coordinates}.
 Depends:
     R (>= 3.1.2)
-License: What license is it under?
+License: MIT + file LICENSE
 LazyData: true
+Imports:
+    htmlwidgets (>= 0.3.2)
+Suggests:
+    knitr
+VignetteBuilder: knitr
