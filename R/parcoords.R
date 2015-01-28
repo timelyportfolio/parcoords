@@ -58,11 +58,23 @@ parcoords <- function(
   # forward options using x
   x = list(
     data = data,
-    options = list( ..., width = width, height = height )
+    options = list(
+      rownames = T
+      , color = color
+      , brushMode = brushMode
+      , reorderable = reorderable
+      , axisDots = axisDots
+      , margins = margins
+      , composite = composite
+      , alpha = alpha
+      , queue = queue
+      , width = width
+      , height = height
+    )
   )
 
   # remove NULL options
-  x.options = Filter( Negate(is.null), x.options )
+  x$options = Filter( Negate(is.null), x$options )
 
   # create widget
   htmlwidgets::createWidget(
