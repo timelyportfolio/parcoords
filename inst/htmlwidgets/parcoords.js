@@ -66,7 +66,6 @@ HTMLWidgets.widget({
 
     if( x.options.brushMode ) {
       parcoords.brushMode(x.options.brushMode);
-      parcoords.render();
     }
 
     // use expando to attach parcoords to the element
