@@ -32,23 +32,21 @@ HTMLWidgets.widget({
       .data( x.data )
 
     // customize our parcoords according to options
-    Object.keys( x.options ).map( function(k) {
+    Object.keys( x.options ).filter(function(k){ k !== "reorderable" }).map( function(k) {
       // if the key exists within parcoords
       if ( parcoords[k] ){
         if( typeof x.options[k] === "boolean" ){
-          try{
+          try {
             parcoords[k]();
-          } catch{
+          } catch(e) {
             console.log( "key/option: " + k + " did not work so ignore for now." )
           }
         } else {
           try{
             parcoords[k]( x.options[k] );
-          } catch{
+          } catch(e) {
             console.log( "key/option: " + k + " with value " + x.options[k] + "did not work so ignore for now." )
           }
-        }
-
         }
       } else {
         console.log( "key/option: " + k + " is not available for customization." )
@@ -59,7 +57,12 @@ HTMLWidgets.widget({
     // now render our parcoords
     parcoords
       .render()
-      .createAxes();
+
+    if( x.options.reorderable ) {
+      parcoords.reorderable();
+    } else {
+      parcoords.createAxes();
+    }
 
     // use expando to attach parcoords to the element
     el.parcoords = parcoords;
