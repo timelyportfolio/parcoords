@@ -18,5 +18,6 @@ LazyData: true
 Imports:
     htmlwidgets (>= 0.3.2)
 Suggests:
-    knitr
+    knitr,
+    testthat
 VignetteBuilder: knitr
