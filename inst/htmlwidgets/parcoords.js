@@ -32,7 +32,7 @@ HTMLWidgets.widget({
       .data( x.data )
 
     // customize our parcoords according to options
-    Object.keys( x.options ).filter(function(k){ k !== "reorderable" }).map( function(k) {
+    Object.keys( x.options ).filter(function(k){ return k !== "reorderable" && k !== "brushMode"  }).map( function(k) {
       // if the key exists within parcoords
       if ( parcoords[k] ){
         if( typeof x.options[k] === "boolean" ){
@@ -62,6 +62,11 @@ HTMLWidgets.widget({
       parcoords.reorderable();
     } else {
       parcoords.createAxes();
+    }
+
+    if( x.options.brushMode ) {
+      parcoords.brushMode(x.options.brushMode);
+      parcoords.render();
     }
 
     // use expando to attach parcoords to the element
