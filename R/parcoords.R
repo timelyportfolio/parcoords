@@ -61,6 +61,9 @@ parcoords <- function(
     options = list( ..., width = width, height = height )
   )
 
+  # remove NULL options
+  x.options = Filter( Negate(is.null), x.options )
+
   # create widget
   htmlwidgets::createWidget(
     name = 'parcoords',
