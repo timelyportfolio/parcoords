@@ -12,6 +12,7 @@ test_that("options",{
   # check rownames F
   expect_identical( parcoords(mtcars,rownames=F)$x$data, mtcars )
   # check brushmode
+  #   this is designed to be flexible and forgiving
   expect_null( parcoords( data.frame(), brushMode = "something" )$x$options$brushMode )
   expect_match( parcoords( data.frame(), brushMode = "1d" )$x$options$brushMode, "1D-axes" )
   expect_match( parcoords( data.frame(), brushMode = "1D-axis" )$x$options$brushMode, "1D-axes" )
