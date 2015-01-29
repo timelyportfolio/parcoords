@@ -32,7 +32,7 @@ HTMLWidgets.widget({
       .data( x.data )
 
     // customize our parcoords according to options
-    Object.keys( x.options ).filter(function(k){ return k !== "reorderable" && k !== "brushMode"  }).map( function(k) {
+    Object.keys( x.options ).filter(function(k){ return k !== "reorderable" && k !== "brushMode" && k!== "color" }).map( function(k) {
       // if the key exists within parcoords
       if ( parcoords[k] ){
         if( typeof x.options[k] === "boolean" ){
@@ -53,6 +53,31 @@ HTMLWidgets.widget({
       }
 
     })
+
+    // color option will require some custom handling
+    //   if color is an object with colorScale and colorBy
+    //    will need to iterate through each of the unique group values
+    //    and assign a color
+    if ( typeof x.options.color !== "undefined" ) {
+      var color;
+      if( x.options.color.constructor.name === "Object" ) {
+        colorScale = x.options.color.colorScale  ? x.options.color.colorScale : d3.scale.category20b();
+        var colors = {};
+        d3.keys(d3.nest().key(function(d){return d[x.options.color.colorBy]}).map(x.data)).map(function(c){
+          colors[c] = colorScale(c);
+        })
+
+        color = function(d) {
+          return colors[d[x.options.color.colorBy]];
+        };
+      } else {
+        //   color can be a single value in which all lines will be same color
+        //    for this we do not need to do anything
+        color = x.options.color;
+      }
+
+      parcoords.color( color );
+    }
 
     // now render our parcoords
     parcoords

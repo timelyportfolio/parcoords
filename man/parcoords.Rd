@@ -12,7 +12,11 @@ parcoords(data, rownames = T, color = NULL, brushMode = NULL,
 
 \item{rownames}{logical use rownames from the data.frame in the chart}
 
-\item{color}{see \href{https://github.com/syntagmatic/parallel-coordinates#parcoords_color}{parcoords.color( color )}}
+\item{color}{see \href{https://github.com/syntagmatic/parallel-coordinates#parcoords_color}{parcoords.color( color )}.
+Color can be a single color as rgb or hex.  For a color function,
+provide a list( colorScale = , colorBy = ) where colorScale is
+a function such as \code{d3.scale.category10()} and colorBy
+is the column name from the data to determine color.}
 
 \item{brushMode}{string, either \code{"1D-axes"} or \code{"2D-strums"},
 giving the type of desired brush behavior for the chart}
@@ -52,6 +56,20 @@ wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}{para
   # simple example using the mtcars dataset
   data( mtcars )
   parcoords( mtcars )
+
+  # various ways to change color
+  #   in these all lines are the specified color
+  parcoords( mtcars, color = "green" )
+  parcoords( mtcars, color=RColorBrewer::brewer.pal(3,"BuPu")[3] )
+  parcoords( mtcars, color = "#f0c" )
+  #   in these we supply a function for our color
+  parcoords(
+    mtcars
+    , color = list(
+       colorBy="cyl"
+       ,colorScale=htmlwidgets::JS('d3.scale.category10()')
+    )
+  )
 }
 }
 
