@@ -20,6 +20,10 @@
 #' @param alpha opacity from 0 to 1 of the polylines
 #' @param queue logical (default FALSE) to change rendering mode to queue for
 #'          progressive rendering.  Usually \code{ queue = T } for very large datasets.
+#' @param mode string see\code{queue} above; \code{ queue = T } will set
+#'          \code{ mode = "queue" }
+#' @param rate integer rate at which render will queue; see \href{https://github.com/syntagmatic/parallel-coordinates#parcoords_rate}{}
+#'          for a full discussion and some recommendations
 #' @param width integer in pixels defining the width of the widget.  Autosizing  to 100%
 #'          of the widget container will occur if \code{ width = NULL }.
 #' @param height integer in pixels defining the height of the widget.  Autosizing to 400px
@@ -48,6 +52,20 @@
 #'        ,colorScale=htmlwidgets::JS('d3.scale.category10()')
 #'     )
 #'   )
+#'   ### be careful; this might strain your system #######
+#'   ###                                           #######
+#'   parcoords(
+#'     diamonds
+#'     ,rownames=F
+#'     ,brushMode = "1d-axes"
+#'     ,reorderable=T
+#'     ,queue = T
+#'     ,color= list(
+#'        colorBy="cut"
+#'        ,colorScale = htmlwidgets::JS("d3.scale.category10()")
+#'      )
+#'   )
+#'
 #' }
 #' @import htmlwidgets
 #'
@@ -63,6 +81,8 @@ parcoords <- function(
   , composite = NULL
   , alpha = NULL
   , queue = F
+  , mode = F
+  , rate = NULL
   , width = NULL
   , height = NULL
 ) {
@@ -97,6 +117,9 @@ parcoords <- function(
     margin = list(top=50,bottom=50,left=100,right=50)
   }
 
+  # queue=T needs to be converted to render = "queue"
+  if (!is.null(queue) && queue) mode = "queue"
+
   # forward options using x
   x = list(
     data = data,
@@ -108,7 +131,8 @@ parcoords <- function(
       , margin = margin
       , composite = composite
       , alpha = alpha
-      , queue = queue
+      , mode = mode
+      , rate = rate
       , width = width
       , height = height
     )

@@ -5,7 +5,8 @@
 \usage{
 parcoords(data, rownames = T, color = NULL, brushMode = NULL,
   reorderable = F, axisDots = NULL, margin = NULL, composite = NULL,
-  alpha = NULL, queue = F, width = NULL, height = NULL)
+  alpha = NULL, queue = F, mode = F, rate = NULL, width = NULL,
+  height = NULL)
 }
 \arguments{
 \item{data}{data.frame with data to use in the chart}
@@ -34,6 +35,12 @@ see \href{https://github.com/syntagmatic/parallel-coordinates#parcoords_composit
 
 \item{queue}{logical (default FALSE) to change rendering mode to queue for
 progressive rendering.  Usually \code{ queue = T } for very large datasets.}
+
+\item{mode}{string see\code{queue} above; \code{ queue = T } will set
+\code{ mode = "queue" }}
+
+\item{rate}{integer rate at which render will queue; see \href{https://github.com/syntagmatic/parallel-coordinates#parcoords_rate}{}
+for a full discussion and some recommendations}
 
 \item{width}{integer in pixels defining the width of the widget.  Autosizing  to 100%
 of the widget container will occur if \code{ width = NULL }.}
@@ -70,6 +77,20 @@ wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}{para
        ,colorScale=htmlwidgets::JS('d3.scale.category10()')
     )
   )
+  ### be careful; this might strain your system #######
+  ###                                           #######
+  parcoords(
+    diamonds
+    ,rownames=F
+    ,brushMode = "1d-axes"
+    ,reorderable=T
+    ,queue = T
+    ,color= list(
+       colorBy="cut"
+       ,colorScale = htmlwidgets::JS("d3.scale.category10()")
+     )
+  )
+
 }
 }
 

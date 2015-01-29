@@ -38,4 +38,13 @@ test_that("options",{
   # check alpha
   expect_null( parcoords(data.frame() )$x$options$alpha )
   expect_equal( parcoords( data.frame(), alpha = 0.2 )$x$options$alpha, 0.2)
+
+  # check that queue= T becomes mode = "queue"
+  expect_match( parcoords( data.frame(), queue = T )$x$options$mode, "queue" )
+  #   and that when queue is null does not overwrite mode
+  expect_match( parcoords( data.frame(), queue = NULL, mode="queue" )$x$options$mode, "queue" )
+
+  # check that rate gets transmitted
+  expect_null( parcoords(data.frame() )$x$options$rate )
+  expect_equal( parcoords(data.frame(), rate = 200)$x$options$rate, 200)
 })
