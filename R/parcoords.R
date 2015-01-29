@@ -69,11 +69,15 @@ parcoords <- function(
   }
 
   # make margin an option, so will need to modifyList
-  if(!is.list(margin)){
+  if( !is.null(margin) && !is.list(margin) ){
     warning("margin should be a list like margin = list(top=20); assuming margin should be applied for all sides")
     margin = list( top=margin, bottom=margin, left=margin, right = margin)
   }
-  margin =  modifyList(list(top=50,bottom=50,left=100,right=50), margin )
+  if( is.list(margin) ){
+    margin =  modifyList(list(top=50,bottom=50,left=100,right=50), margin )
+  } else {
+    margin = list(top=50,bottom=50,left=100,right=50)
+  }
 
   # forward options using x
   x = list(

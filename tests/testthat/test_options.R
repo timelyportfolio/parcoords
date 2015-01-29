@@ -23,7 +23,7 @@ test_that("options",{
   # check margins
   expect_identical(
     parcoords(data.frame())$x$options$margin
-    ,list( top = 50, bottom = 50, left=100,right = 50)
+    ,list( top = 50, bottom = 50, left=100, right = 50)
   )
   #   if single numeric then apply param to all sides
   expect_identical(
@@ -34,4 +34,8 @@ test_that("options",{
     parcoords(data.frame(),margin=list(top=10,left=10))$x$options$margin
     ,list( top = 10, bottom = 50, left=10, right = 50)
   )
+
+  # check alpha
+  expect_null( parcoords(data.frame() )$x$options$alpha )
+  expect_equal( parcoords( data.frame(), alpha = 0.2 )$x$options$alpha, 0.2)
 })
