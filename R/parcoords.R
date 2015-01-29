@@ -54,6 +54,7 @@
 #'   )
 #'   ### be careful; this might strain your system #######
 #'   ###                                           #######
+#'   data( diamonds, package = "ggplot2" )
 #'   parcoords(
 #'     diamonds
 #'     ,rownames=F
@@ -65,7 +66,21 @@
 #'        ,colorScale = htmlwidgets::JS("d3.scale.category10()")
 #'      )
 #'   )
-#'
+#'   # or if we want to add in a dplyr chain
+#'   library(dplyr)
+#'   data( diamonds, package = "ggplot2" )
+#'   diamonds %>%
+#'     mutate( carat = cut(carat,breaks = c(0,1,2,3,4,5), right =F) ) %>%
+#'     group_by( carat ) %>%
+#'     summarise_each(funs(mean),-carat) %>%
+#'     parcoords(
+#'       rownames= F
+#'       ,color = list(
+#'          colorScale = htmlwidgets::JS('d3.scale.category10()' )
+#'         , colorBy = "carat"
+#'       )
+#'       ,brushMode = "1D"
+#'     )
 #' }
 #' @import htmlwidgets
 #'
