@@ -10,7 +10,7 @@
 #'          giving the type of desired brush behavior for the chart
 #' @param reorderable logical enable reordering of axes
 #' @param axisDots logical mark the points where polylines meet an axis with dots
-#' @param margins list of sizes of margins in pixels
+#' @param margin list of sizes of margins in pixels
 #' @param composite foreground context's composite type
 #'          see \href{https://github.com/syntagmatic/parallel-coordinates#parcoords_composite}{parcoords.composite}
 #' @param alpha opacity from 0 to 1 of the polylines
@@ -41,7 +41,7 @@ parcoords <- function(
   , brushMode = NULL
   , reorderable = F
   , axisDots = T
-  , margins = list( bottom = 50, left = 50, top = 50, right = 50)
+  , margin = NULL
   , composite = NULL
   , alpha = NULL
   , queue = F
@@ -68,6 +68,13 @@ parcoords <- function(
     }
   }
 
+  # make margin an option, so will need to modifyList
+  if(!is.list(margin)){
+    warning("margin should be a list like margin = list(top=20); assuming margin should be applied for all sides")
+    margin = list( top=margin, bottom=margin, left=margin, right = margin)
+  }
+  margin =  modifyList(list(top=50,bottom=50,left=100,right=50), margin )
+
   # forward options using x
   x = list(
     data = data,
@@ -76,7 +83,7 @@ parcoords <- function(
       , brushMode = brushMode
       , reorderable = reorderable
       , axisDots = axisDots
-      , margins = margins
+      , margin = margin
       , composite = composite
       , alpha = alpha
       , queue = queue

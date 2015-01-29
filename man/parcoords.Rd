@@ -4,9 +4,8 @@
 \title{htmlwidget for d3.js parallel-coordinates}
 \usage{
 parcoords(data, rownames = T, color = NULL, brushMode = NULL,
-  reorderable = F, axisDots = T, margins = list(bottom = 50, left = 50,
-  top = 50, right = 50), composite = NULL, alpha = NULL, queue = F,
-  width = NULL, height = NULL)
+  reorderable = F, axisDots = T, margin = NULL, composite = NULL,
+  alpha = NULL, queue = F, width = NULL, height = NULL)
 }
 \arguments{
 \item{data}{data.frame with data to use in the chart}
@@ -22,7 +21,7 @@ giving the type of desired brush behavior for the chart}
 
 \item{axisDots}{logical mark the points where polylines meet an axis with dots}
 
-\item{margins}{list of sizes of margins in pixels}
+\item{margin}{list of sizes of margins in pixels}
 
 \item{composite}{foreground context's composite type
 see \href{https://github.com/syntagmatic/parallel-coordinates#parcoords_composite}{parcoords.composite}}

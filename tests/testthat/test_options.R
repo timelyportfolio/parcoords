@@ -11,6 +11,7 @@ test_that("options",{
   expect_identical( parcoords(mtcars)$x$data, data.frame(names = rownames(mtcars),mtcars,stringsAsFactors=F ))
   # check rownames F
   expect_identical( parcoords(mtcars,rownames=F)$x$data, mtcars )
+
   # check brushmode
   #   this is designed to be flexible and forgiving
   expect_null( parcoords( data.frame(), brushMode = "something" )$x$options$brushMode )
@@ -18,4 +19,19 @@ test_that("options",{
   expect_match( parcoords( data.frame(), brushMode = "1D-axis" )$x$options$brushMode, "1D-axes" )
   expect_match( parcoords( data.frame(), brushMode = "2d" )$x$options$brushMode, "2D-strums" )
   expect_match( parcoords( data.frame(), brushMode = "2Dstrum" )$x$options$brushMode, "2D-strums" )
+
+  # check margins
+  expect_identical(
+    parcoords(data.frame())$x$options$margin
+    ,list( top = 50, bottom = 50, left=100,right = 50)
+  )
+  #   if single numeric then apply param to all sides
+  expect_identical(
+    parcoords(data.frame(),margin=0)$x$options$margin
+    ,list( top = 0, bottom = 0, left=0, right = 0)
+  )
+  expect_identical(
+    parcoords(data.frame(),margin=list(top=10,left=10))$x$options$margin
+    ,list( top = 10, bottom = 50, left=10, right = 50)
+  )
 })
