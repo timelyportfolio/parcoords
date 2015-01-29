@@ -58,7 +58,7 @@ parcoords <- function(
   , color = NULL
   , brushMode = NULL
   , reorderable = F
-  , axisDots = T
+  , axisDots = NULL
   , margin = NULL
   , composite = NULL
   , alpha = NULL

@@ -4,7 +4,7 @@
 \title{htmlwidget for d3.js parallel-coordinates}
 \usage{
 parcoords(data, rownames = T, color = NULL, brushMode = NULL,
-  reorderable = F, axisDots = T, margin = NULL, composite = NULL,
+  reorderable = F, axisDots = NULL, margin = NULL, composite = NULL,
   alpha = NULL, queue = F, width = NULL, height = NULL)
 }
 \arguments{
