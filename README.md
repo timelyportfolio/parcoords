@@ -6,7 +6,7 @@ Note:  this is very pre-alpha, but should be close to complete by the end of the
 
 ```
 # not on CRAN so use devtools::install_github to try it out
-# devtools::install("timelyportfolio/parcoords")
+# devtools::install_github("timelyportfolio/parcoords")
 
 library(parcoords)
 
