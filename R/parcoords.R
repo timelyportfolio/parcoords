@@ -11,10 +11,16 @@
 #'          a function such as \code{d3.scale.category10()} and colorBy
 #'          is the column name from the data to determine color.
 #' @param brushMode string, either \code{"1D-axes"} or \code{"2D-strums"},
-#'          giving the type of desired brush behavior for the chart
+#'          giving the type of desired brush behavior for the chart. Currently
+#'          \code{brushMode = "2D-strums"} requires left margin = 0, so
+#'          this will change automatically and might result in unexpected
+#'          behavior.
 #' @param reorderable logical enable reordering of axes
 #' @param axisDots logical mark the points where polylines meet an axis with dots
-#' @param margin list of sizes of margins in pixels
+#' @param margin list of sizes of margins in pixels.  Currently
+#'          \code{brushMode = "2D-strums"} requires left margin = 0, so
+#'          this will change automatically and might result in unexpected
+#'          behavior.
 #' @param composite foreground context's composite type
 #'          see \href{https://github.com/syntagmatic/parallel-coordinates#parcoords_composite}{parcoords.composite}
 #' @param alpha opacity from 0 to 1 of the polylines
@@ -113,6 +119,7 @@ parcoords <- function(
   if ( !is.null(brushMode) ) {
     if( grepl( x= brushMode, pattern = "2[dD](-)*([Ss]trum)*" ) ) {
       brushMode = "2D-strums"
+      warning ( "brushMode 2D-strums requires left margin = 0, so changing")
     } else if( grepl( x= brushMode, pattern = "1[dD](-)*([Aa]x[ie]s)*" ) ) {
       brushMode = "1D-axes"
     } else {

@@ -90,6 +90,12 @@ HTMLWidgets.widget({
     }
 
     if( x.options.brushMode ) {
+      if ( x.options.brushMode === "2D-strums" ) {
+        x.options.margin.left = 0;
+        parcoords.margin( x.options.margin );
+        parcoords.render();
+        console.log( "changing left margin to 0 to work with 2d brush" );
+      }
       parcoords.brushMode(x.options.brushMode);
     }
 
