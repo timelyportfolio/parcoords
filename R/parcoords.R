@@ -146,7 +146,8 @@ parcoords <- function(
   x = list(
     data = data,
     options = list(
-      color = color
+      rownames = rownames
+      , color = color
       , brushMode = brushMode
       , reorderable = reorderable
       , axisDots = axisDots

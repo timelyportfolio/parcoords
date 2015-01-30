@@ -32,7 +32,7 @@ HTMLWidgets.widget({
       .data( x.data )
 
     // customize our parcoords according to options
-    Object.keys( x.options ).filter(function(k){ return k !== "reorderable" && k !== "brushMode" && k!== "color" }).map( function(k) {
+    Object.keys( x.options ).filter(function(k){ return k !== "reorderable" && k !== "brushMode" && k!== "color" && k!=="rownames" }).map( function(k) {
       // if the key exists within parcoords
       if ( parcoords[k] ){
         if( typeof x.options[k] === "boolean" ){
@@ -97,6 +97,11 @@ HTMLWidgets.widget({
         console.log( "changing left margin to 0 to work with 2d brush" );
       }
       parcoords.brushMode(x.options.brushMode);
+    }
+
+    // if rownames = T then remove axis title
+    if( typeof x.options.rownames !== "undefined" && x.options.rownames === true ) {
+      d3.select("#" + el.id + " .dimension .axis > text").remove();
     }
 
     // use expando to attach parcoords to the element
