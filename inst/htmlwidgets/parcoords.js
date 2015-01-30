@@ -104,6 +104,11 @@ HTMLWidgets.widget({
       d3.select("#" + el.id + " .dimension .axis > text").remove();
     }
 
+    // sloppy but for now let's force text smaller
+    //   ?? how best to provide parameter in R
+    d3.selectAll("#" + el.id + " svg text")
+        .style("font-size","10px");
+
     // use expando to attach parcoords to the element
     el.parcoords = parcoords;
     // also attach the parallel coordinates to instance

@@ -20,13 +20,19 @@ a function such as \code{d3.scale.category10()} and colorBy
 is the column name from the data to determine color.}
 
 \item{brushMode}{string, either \code{"1D-axes"} or \code{"2D-strums"},
-giving the type of desired brush behavior for the chart}
+giving the type of desired brush behavior for the chart. Currently
+\code{brushMode = "2D-strums"} requires left margin = 0, so
+this will change automatically and might result in unexpected
+behavior.}
 
 \item{reorderable}{logical enable reordering of axes}
 
 \item{axisDots}{logical mark the points where polylines meet an axis with dots}
 
-\item{margin}{list of sizes of margins in pixels}
+\item{margin}{list of sizes of margins in pixels.  Currently
+\code{brushMode = "2D-strums"} requires left margin = 0, so
+this will change automatically and might result in unexpected
+behavior.}
 
 \item{composite}{foreground context's composite type
 see \href{https://github.com/syntagmatic/parallel-coordinates#parcoords_composite}{parcoords.composite}}
