@@ -64,7 +64,7 @@ HTMLWidgets.widget({
         colorScale = x.options.color.colorScale  ? x.options.color.colorScale : d3.scale.category20b();
         var colors = {};
         d3.keys(d3.nest().key(function(d){return d[x.options.color.colorBy]}).map(x.data)).map(function(c){
-          colors[c] = colorScale(c);
+          colors[c] = colorScale[c];
         })
 
         color = function(d) {
