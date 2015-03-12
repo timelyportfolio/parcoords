@@ -77,8 +77,7 @@ var side_effects = d3.dispatch.apply(this,d3.keys(__))
   .on("margin", function(d) { pc.resize(); })
   .on("rate", function(d) { rqueue.rate(d.value); })
   .on("data", function(d) {
-    if (flags.shadows){ paths(__.data, ctx.shadows); }
-    pc.detectDimensions();
+    if (flags.shadows){paths(__.data, ctx.shadows);}
   })
   .on("dimensions", function(d) {
     xscale.domain(__.dimensions);
@@ -114,9 +113,6 @@ getset(pc, __, events);
 // expose events
 d3.rebind(pc, events, "on");
 
-// tick formatting
-d3.rebind(pc, axis, "ticks", "orient", "tickValues", "tickSubdivide", "tickSize", "tickPadding", "tickFormat");
-
 // getter/setter with event firing
 function getset(obj,state,events)  {
   d3.keys(state).forEach(function(key) {
@@ -147,15 +143,33 @@ pc.autoscale = function() {
   // yscale
   var defaultScales = {
     "date": function(k) {
+      var extent = d3.extent(__.data, function(d) {
+        return d[k] ? d[k].getTime() : null;
+      });
+
+      // special case if single value
+      if (extent[0] === extent[1]) {
+        return d3.scale.ordinal()
+          .domain([extent[0]])
+          .rangePoints([h()+1, 1]);
+      }
+
       return d3.time.scale()
-        .domain(d3.extent(__.data, function(d) {
-          return d[k] ? d[k].getTime() : null;
-        }))
+        .domain(extent)
         .range([h()+1, 1]);
     },
     "number": function(k) {
+      var extent = d3.extent(__.data, function(d) { return +d[k]; });
+
+      // special case if single value
+      if (extent[0] === extent[1]) {
+        return d3.scale.ordinal()
+          .domain([extent[0]])
+          .rangePoints([h()+1, 1]);
+      }
+
       return d3.scale.linear()
-        .domain(d3.extent(__.data, function(d) { return +d[k]; }))
+        .domain(extent)
         .range([h()+1, 1]);
     },
     "string": function(k) {
@@ -189,15 +203,6 @@ pc.autoscale = function() {
   __.hideAxis.forEach(function(k) {
     yscale[k] = defaultScales[__.types[k]](k);
   });
-
-  // hack to remove ordinal dimensions with many values
-  pc.dimensions(pc.dimensions().filter(function(p,i) {
-    var uniques = yscale[p].domain().length;
-    if (__.types[p] == "string" && (uniques > 60 || uniques < 2)) {
-      return false;
-    }
-    return true;
-  }));
 
   // xscale
   xscale.rangePoints([0, w()], 1);
@@ -267,7 +272,8 @@ pc.commonScale = function(global, type) {
 	}
 
 	return this;
-};pc.detectDimensions = function() {
+};
+pc.detectDimensions = function() {
   pc.types(pc.detectDimensionTypes(__.data));
   pc.dimensions(d3.keys(pc.types()));
   return this;
@@ -308,6 +314,7 @@ pc.render = function() {
 
 pc.render['default'] = function() {
   pc.clear('foreground');
+  pc.clear('highlight');
   if (__.brushed) {
     __.brushed.forEach(path_foreground);
     __.highlighted.forEach(path_highlight);
@@ -503,6 +510,8 @@ pc.clear = function(layer) {
   ctx[layer].clearRect(0,0,w()+2,h()+2);
   return this;
 };
+d3.rebind(pc, axis, "ticks", "orient", "tickValues", "tickSubdivide", "tickSize", "tickPadding", "tickFormat");
+
 function flipAxisAndUpdatePCP(dimension) {
   var g = pc.svg.selectAll(".dimension");
 
@@ -1285,7 +1294,7 @@ function position(d) {
   var v = dragging[d];
   return v == null ? xscale(d) : v;
 }
-pc.version = "0.5.0";
+pc.version = "0.6.0";
   // this descriptive text should live with other introspective methods
   pc.toString = function() { return "Parallel Coordinates: " + __.dimensions.length + " dimensions (" + d3.keys(__.data[0]).length + " total) , " + __.data.length + " rows"; };
 
