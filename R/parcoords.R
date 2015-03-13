@@ -178,7 +178,10 @@ parcoords <- function(
   )
 }
 
+
 #' Widget output function for use in Shiny
+#'
+#' @example man-roxygen/shiny.R
 #'
 #' @export
 parcoordsOutput <- function(outputId, width = '100%', height = '400px'){
@@ -186,6 +189,8 @@ parcoordsOutput <- function(outputId, width = '100%', height = '400px'){
 }
 
 #' Widget render function for use in Shiny
+#'
+#' @seealso \code{\link{parcoordsOutput}}
 #'
 #' @export
 renderParcoords <- function(expr, env = parent.frame(), quoted = FALSE) {
