@@ -40,9 +40,13 @@ HTMLWidgets.widget({
     //the parcoords.on("brush",function(d)){} only works with 1D-axes selection
     if (HTMLWidgets.shinyMode){
       parcoords.on("render", function() {
-        var ids = this.brushed().map(function(d){
-         return d.names;
-        })
+        var ids = [];
+        if(this.brushed()){
+          ids = this.brushed().map(function(d){
+            return d.names;
+          })
+        }
+
         //return the brushed row names
         if(Shiny.onInputChange){
           Shiny.onInputChange(el.id + "_brushed_row_names", ids);
