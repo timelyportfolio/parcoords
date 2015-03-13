@@ -4,7 +4,10 @@
 #' wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}{parallel-coordinates}.
 #'
 #' @param data  data.frame with data to use in the chart
-#' @param rownames logical use rownames from the data.frame in the chart. rownames must be TRUE for use with Rshiny
+#' @param rownames logical use rownames from the data.frame in the chart.  Regardless of
+#'          this parameter, we will append rownames to the data that we send to JavaScript.
+#'          If \code{rownames} equals \code{FALSE}, then we will use parallel coordinates
+#'          to hide it.
 #' @param color see \href{https://github.com/syntagmatic/parallel-coordinates#parcoords_color}{parcoords.color( color )}.
 #'          Color can be a single color as rgb or hex.  For a color function,
 #'          provide a list( colorScale = , colorBy = ) where colorScale is
@@ -111,8 +114,9 @@ parcoords <- function(
   # verify that data is a data.frame
   if(!is.data.frame(data)) stop( "data parameter should be of type data.frame", call. = FALSE)
 
-  # add rownames to data if rownames = T
-  if( rownames == TRUE ) data = data.frame( "names" = rownames(data), data, stringsAsFactors = F )
+  # add rownames to data
+  #  rownames = F will tell us to hide these with JavaScript
+  data = data.frame( "names" = rownames(data), data, stringsAsFactors = F )
 
   # check for valid brushMode
   #  should be either "1D-axes" or "2D-strums"
