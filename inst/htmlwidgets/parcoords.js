@@ -29,7 +29,31 @@ HTMLWidgets.widget({
 
     // create our parallel coordinates
     var parcoords = d3.parcoords()("#" + el.id)
-      .data( x.data )
+      .data( x.data );
+
+    //Identify column ID containing unique data identifier as passed in
+    //Only hide if shiny mode is running
+    if (HTMLWidgets.shinyMode){
+            parcoords.hideAxis(["names"]);
+    }
+
+
+    //identify the brushed elements and return those data IDs to Rshiny
+    //the parcoords.on("brush",function(d)){} only works with 1D-axes selection
+        if (HTMLWidgets.shinyMode){
+           parcoords.hideAxis(["names"]);
+           parcoords.on("render", function() {
+             var ids = [];
+             var selected = this.brushed();
+             for (var i = 0; i < selected.length; i++){
+               ids.push(selected[i].names);
+               }
+               //return the brushed row names
+               Shiny.onInputChange(el.id + "_brushed_row_names", ids);
+           });
+        }
+
+
 
     // customize our parcoords according to options
     Object.keys( x.options ).filter(function(k){ return k !== "reorderable" && k !== "brushMode" && k!== "color" && k!=="rownames" }).map( function(k) {
@@ -113,6 +137,8 @@ HTMLWidgets.widget({
     el.parcoords = parcoords;
     // also attach the parallel coordinates to instance
     instance.parcoords = parcoords;
+
+
 
   },
 

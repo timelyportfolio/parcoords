@@ -4,7 +4,7 @@
 #' wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}{parallel-coordinates}.
 #'
 #' @param data  data.frame with data to use in the chart
-#' @param rownames logical use rownames from the data.frame in the chart
+#' @param rownames logical use rownames from the data.frame in the chart. rownames must be TRUE for use with Rshiny
 #' @param color see \href{https://github.com/syntagmatic/parallel-coordinates#parcoords_color}{parcoords.color( color )}.
 #'          Color can be a single color as rgb or hex.  For a color function,
 #'          provide a list( colorScale = , colorBy = ) where colorScale is

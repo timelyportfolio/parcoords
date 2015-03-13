@@ -1,12 +1,14 @@
 Package: parcoords
 Title: htmlwidget for d3.js parallel coordinates chart
-Version: 0.1
+Version: 0.1.1
 Authors@R: c( person("Mike", "Bostock", role = c("aut", "cph"), comment =
     "d3.js library in htmlwidgets/lib, http://d3js.org"), person("Kai", "Chang"
     ,role = c( "aut","cph" ), comment = "parallel coordinates reusable chart,
     https://github.com/syntagmatic/parallel-coordinates"),
     person("Kenton","Russell", role = c("aut","cre"), comment = "R interface",
-    email = "kent.russell@timelyportfolio.com") )
+    email = "kent.russell@timelyportfolio.com"),
+    person("Mark","Albrecht",role = c("ctb"),comment = "Shiny output and example",
+    email="malbrech@nmdp.org"))
 Maintainer: Kenton Russell <kent.russell@timelyportfolio.com>
 Description: Create interactive parallel coordinates charts with this
     htmlwidget wrapper for d3.js
