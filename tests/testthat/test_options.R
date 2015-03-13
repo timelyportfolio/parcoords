@@ -7,14 +7,15 @@ test_that("options",{
   # use mtcars dataset
   data(mtcars)
 
-  # check rownames T
+  # will add rownames to the data regardless of rownames parameter
   expect_identical( parcoords(mtcars)$x$data, data.frame(names = rownames(mtcars),mtcars,stringsAsFactors=F ))
-  # check rownames F
-  expect_identical( parcoords(mtcars,rownames=F)$x$data, mtcars )
+  # make sure rownames is passed through
+  expect_true( !parcoords( data.frame(), rownames=F )$x$options$rownames )
 
   # check brushmode
   #   this is designed to be flexible and forgiving
-  expect_null( parcoords( data.frame(), brushMode = "something" )$x$options$brushMode )
+  expect_null( suppressWarnings(parcoords( data.frame(), brushMode = "something" ))$x$options$brushMode )
+  expect_warning( parcoords( data.frame(), brushMode = "something" ) )
   expect_match( parcoords( data.frame(), brushMode = "1d" )$x$options$brushMode, "1D-axes" )
   expect_match( parcoords( data.frame(), brushMode = "1D-axis" )$x$options$brushMode, "1D-axes" )
   expect_match( parcoords( data.frame(), brushMode = "2d" )$x$options$brushMode, "2D-strums" )
