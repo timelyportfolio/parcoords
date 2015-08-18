@@ -116,7 +116,7 @@ parcoords <- function(
 
   # add rownames to data
   #  rownames = F will tell us to hide these with JavaScript
-  data = data.frame( "names" = rownames(data), data, stringsAsFactors = F )
+  data = data.frame( "names" = rownames(data), data, stringsAsFactors = F, check.names=FALSE)
 
   # check for valid brushMode
   #  should be either "1D-axes" or "2D-strums"
