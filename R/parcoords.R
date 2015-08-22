@@ -33,6 +33,14 @@
 #'          \code{ mode = "queue" }
 #' @param rate integer rate at which render will queue; see \href{https://github.com/syntagmatic/parallel-coordinates#parcoords_rate}{}
 #'          for a full discussion and some recommendations
+#' @param tasks a character string or \code{\link[htmlwidgets]{JS}} or list of
+#'          strings or \code{JS} representing a JavaScript function(s) to run
+#'          after the \code{parcoords} has rendered.  These provide an opportunity
+#'          for advanced customization.  Note, the \code{function} will use the
+#'          JavaScript \code{call} mechanism, so within the function, \code{this} will
+#'          be an object with {this.el} representing the containing element of the
+#'          \code{parcoords} and {this.parcoords} representing the \code{parcoords}
+#'          instance.
 #' @param width integer in pixels defining the width of the widget.  Autosizing  to 100%
 #'          of the widget container will occur if \code{ width = NULL }.
 #' @param height integer in pixels defining the height of the widget.  Autosizing to 400px
@@ -107,6 +115,7 @@ parcoords <- function(
   , queue = F
   , mode = F
   , rate = NULL
+  , tasks = NULL
   , width = NULL
   , height = NULL
 ) {
@@ -151,6 +160,17 @@ parcoords <- function(
   # queue=T needs to be converted to render = "queue"
   if (!is.null(queue) && queue) mode = "queue"
 
+  # convert character tasks to htmlwidgets::JS
+  if ( !is.null(tasks) ){
+    tasks = lapply(
+      tasks,
+      function(task){
+        if(!inherits(task,"JS_EVAL")) task <- htmlwidgets::JS(task)
+        task
+      }
+    )
+  }
+
   # forward options using x
   x = list(
     data = data,
@@ -168,6 +188,7 @@ parcoords <- function(
       , width = width
       , height = height
     )
+    , tasks = tasks
   )
 
   # remove NULL options
