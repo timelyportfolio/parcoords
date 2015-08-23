@@ -23,11 +23,9 @@ provide a list( colorScale = , colorBy = ) where colorScale is
 a function such as \code{d3.scale.category10()} and colorBy
 is the column name from the data to determine color.}
 
-\item{brushMode}{string, either \code{"1D-axes"} or \code{"2D-strums"},
-giving the type of desired brush behavior for the chart. Currently
-\code{brushMode = "2D-strums"} requires left margin = 0, so
-this will change automatically and might result in unexpected
-behavior.}
+\item{brushMode}{string, either \code{"1D-axes"}, \code{"1D-axes-multi"},
+or \code{"2D-strums"}
+giving the type of desired brush behavior for the chart.}
 
 \item{brushPredicate}{string, either \code{"and"} or \code{"or"} giving
 the logic forthe join with multiple brushes.}
