@@ -5,9 +5,9 @@
 \title{htmlwidget for d3.js parallel-coordinates}
 \usage{
 parcoords(data, rownames = T, color = NULL, brushMode = NULL,
-  reorderable = F, axisDots = NULL, margin = NULL, composite = NULL,
-  alpha = NULL, queue = F, mode = F, rate = NULL, tasks = NULL,
-  width = NULL, height = NULL)
+  brushPredicate = "and", reorderable = F, axisDots = NULL,
+  margin = NULL, composite = NULL, alpha = NULL, queue = F, mode = F,
+  rate = NULL, tasks = NULL, width = NULL, height = NULL)
 }
 \arguments{
 \item{data}{data.frame with data to use in the chart}
@@ -23,11 +23,12 @@ provide a list( colorScale = , colorBy = ) where colorScale is
 a function such as \code{d3.scale.category10()} and colorBy
 is the column name from the data to determine color.}
 
-\item{brushMode}{string, either \code{"1D-axes"} or \code{"2D-strums"},
-giving the type of desired brush behavior for the chart. Currently
-\code{brushMode = "2D-strums"} requires left margin = 0, so
-this will change automatically and might result in unexpected
-behavior.}
+\item{brushMode}{string, either \code{"1D-axes"}, \code{"1D-axes-multi"},
+or \code{"2D-strums"}
+giving the type of desired brush behavior for the chart.}
+
+\item{brushPredicate}{string, either \code{"and"} or \code{"or"} giving
+the logic forthe join with multiple brushes.}
 
 \item{reorderable}{logical enable reordering of axes}
 

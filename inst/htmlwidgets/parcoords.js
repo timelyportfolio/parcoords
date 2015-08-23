@@ -55,7 +55,7 @@ HTMLWidgets.widget({
     }
 
     // customize our parcoords according to options
-    Object.keys( x.options ).filter(function(k){ return k !== "reorderable" && k !== "brushMode" && k!== "color" && k!=="rownames" }).map( function(k) {
+    Object.keys( x.options ).filter(function(k){ return k !== "reorderable" && k !== "brushMode" && k !== "brushPredicate" && k!== "color" && k!=="rownames" }).map( function(k) {
       // if the key exists within parcoords
       if ( parcoords[k] ){
         if( typeof x.options[k] === "boolean" ){
@@ -112,14 +112,10 @@ HTMLWidgets.widget({
     }
 
     if( x.options.brushMode ) {
-      if ( x.options.brushMode === "2D-strums" ) {
-        x.options.margin.left = 0;
-        parcoords.margin( x.options.margin );
-        parcoords.render();
-        console.log( "changing left margin to 0 to work with 2d brush" );
-      }
       parcoords.brushMode(x.options.brushMode);
     }
+
+    parcoords.brushPredicate(x.options.brushPredicate);
 
     // if rownames = T then remove axis title
     if( typeof x.options.rownames !== "undefined" && x.options.rownames === true ) {
