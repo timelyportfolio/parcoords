@@ -1,4 +1,4 @@
-.parcoords > svg, .parcoords > canvas { 
+.parcoords > svg, .parcoords > canvas {
   font: 14px sans-serif;
   position: absolute;
 }
@@ -44,4 +44,5 @@
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+    background-color: white;
 }

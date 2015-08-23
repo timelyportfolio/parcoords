@@ -6,5 +6,5 @@ dependencies:
   - name: "parallel-coordinates"
     version: 0.6.0
     src: "htmlwidgets/lib/parallel-coordinates"
-    script: d3.parcoords.js
+    script: [d3.svg.multibrush.js,d3.parcoords.js]
     stylesheet: d3.parcoords.css

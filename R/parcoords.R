@@ -18,6 +18,8 @@
 #'          \code{brushMode = "2D-strums"} requires left margin = 0, so
 #'          this will change automatically and might result in unexpected
 #'          behavior.
+#' @param brushPredicate string, either \code{"and"} or \code{"or"} giving
+#'          the logic forthe join with multiple brushes.
 #' @param reorderable logical enable reordering of axes
 #' @param axisDots logical mark the points where polylines meet an axis with dots
 #' @param margin list of sizes of margins in pixels.  Currently
@@ -107,6 +109,7 @@ parcoords <- function(
   , rownames = T
   , color = NULL
   , brushMode = NULL
+  , brushPredicate = "and"
   , reorderable = F
   , axisDots = NULL
   , margin = NULL
@@ -137,14 +140,18 @@ parcoords <- function(
   if ( !is.null(brushMode) ) {
     if( grepl( x= brushMode, pattern = "2[dD](-)*([Ss]trum)*" ) ) {
       brushMode = "2D-strums"
-      warning ( "brushMode 2D-strums requires left margin = 0, so changing")
     } else if( grepl( x= brushMode, pattern = "1[dD](-)*([Aa]x[ie]s)*" ) ) {
       brushMode = "1D-axes"
+    } else if( grepl( x= brushMode, pattern = "[mM](ult)") ) {
+      brushMode = "1D-axes-multi"
     } else {
       warning( paste0("brushMode ", brushMode, " supplied is incorrect"), call. = F )
       brushMode = NULL
     }
   }
+
+  # upper case brushPredicate
+  brushPredicate = toupper( brushPredicate )
 
   # make margin an option, so will need to modifyList
   if( !is.null(margin) && !is.list(margin) ){
@@ -178,6 +185,7 @@ parcoords <- function(
       rownames = rownames
       , color = color
       , brushMode = brushMode
+      , brushPredicate = brushPredicate
       , reorderable = reorderable
       , axisDots = axisDots
       , margin = margin
