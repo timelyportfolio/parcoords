@@ -21,9 +21,11 @@ test_that("options",{
   expect_match( parcoords( data.frame(), brushMode = "2d" )$x$options$brushMode, "2D-strums" )
   expect_match( parcoords( data.frame(), brushMode = "2Dstrum" )$x$options$brushMode, "2D-strums" )
   expect_match( parcoords( data.frame(), brushMode = "multi" )$x$options$brushMode, "1D-axes-multi" )
+  expect_match( parcoords( data.frame(), brushMode = "1d-multi" )$x$options$brushMode, "1D-axes-multi" )
 
   # make sure brushpredicate gets uppercase
   expect_match( parcoords( data.frame(), brushPredicate = "and" )$x$options$brushPredicate, "AND" )
+  expect_match( parcoords( data.frame(), brushPredicate = "Or" )$x$options$brushPredicate, "OR" )
 
   # check margins
   expect_identical(

@@ -138,10 +138,14 @@ parcoords <- function(
   if ( !is.null(brushMode) ) {
     if( grepl( x= brushMode, pattern = "2[dD](-)*([Ss]trum)*" ) ) {
       brushMode = "2D-strums"
-    } else if( grepl( x= brushMode, pattern = "1[dD](-)*([Aa]x[ie]s)*" ) ) {
-      brushMode = "1D-axes"
-    } else if( grepl( x= brushMode, pattern = "[mM](ult)") ) {
-      brushMode = "1D-axes-multi"
+    } else if( grepl( x= brushMode, pattern = "1[dD](-)*([Aa]x[ie]s)*" ) ||
+               grepl( x= brushMode, pattern = "[mM](ult)" )
+     ) {
+      if( grepl( x= brushMode, pattern = "[mM](ult)" ) ) {
+        brushMode = "1D-axes-multi" }
+      else if( grepl( x= brushMode, pattern = "1[dD](-)*([Aa]x[ie]s)*" ) ) {
+        brushMode = "1D-axes"
+      }
     } else {
       warning( paste0("brushMode ", brushMode, " supplied is incorrect"), call. = F )
       brushMode = NULL
