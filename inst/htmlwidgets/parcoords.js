@@ -113,9 +113,8 @@ HTMLWidgets.widget({
 
     if( x.options.brushMode ) {
       parcoords.brushMode(x.options.brushMode);
+      parcoords.brushPredicate(x.options.brushPredicate);
     }
-
-    parcoords.brushPredicate(x.options.brushPredicate);
 
     // if rownames = T then remove axis title
     if( typeof x.options.rownames !== "undefined" && x.options.rownames === true ) {
