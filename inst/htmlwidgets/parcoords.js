@@ -130,7 +130,7 @@ HTMLWidgets.widget({
     // set up a container for tasks to perform after completion
     //  one example would be add callbacks for event handling
     //  styling
-    if (!(typeof x.tasks === "undefined") ){
+    if (!(typeof x.tasks === "undefined" || x.tasks === null) ){
       if ( (typeof x.tasks.length === "undefined") ||
        (typeof x.tasks === "function" ) ) {
          // handle a function not enclosed in array
