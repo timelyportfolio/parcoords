@@ -8,7 +8,7 @@
 #'          this parameter, we will append rownames to the data that we send to JavaScript.
 #'          If \code{rownames} equals \code{FALSE}, then we will use parallel coordinates
 #'          to hide it.
-#' @param color see \href{https://github.com/syntagmatic/parallel-coordinates#parcoords_color}{parcoords.color( color )}.
+#' @param color see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_color}{parcoords.color( color )}.
 #'          Color can be a single color as rgb or hex.  For a color function,
 #'          provide a list( colorScale = , colorBy = ) where colorScale is
 #'          a function such as \code{d3.scale.category10()} and colorBy
@@ -25,13 +25,13 @@
 #'          this will change automatically and might result in unexpected
 #'          behavior.
 #' @param composite foreground context's composite type
-#'          see \href{https://github.com/syntagmatic/parallel-coordinates#parcoords_composite}{parcoords.composite}
+#'          see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_composite}{parcoords.composite}
 #' @param alpha opacity from 0 to 1 of the polylines
 #' @param queue logical (default FALSE) to change rendering mode to queue for
 #'          progressive rendering.  Usually \code{ queue = T } for very large datasets.
 #' @param mode string see\code{queue} above; \code{ queue = T } will set
 #'          \code{ mode = "queue" }
-#' @param rate integer rate at which render will queue; see \href{https://github.com/syntagmatic/parallel-coordinates#parcoords_rate}{}
+#' @param rate integer rate at which render will queue; see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_rate}{}
 #'          for a full discussion and some recommendations
 #' @param tasks a character string or \code{\link[htmlwidgets]{JS}} or list of
 #'          strings or \code{JS} representing a JavaScript function(s) to run

@@ -1,6 +1,6 @@
 Package: parcoords
 Title: htmlwidget for d3.js parallel coordinates chart
-Version: 0.2
+Version: 0.2.1
 Authors@R: c( person("Mike", "Bostock", role = c("aut", "cph"), comment =
     "d3.js library in htmlwidgets/lib, http://d3js.org"), person("Kai", "Chang"
     ,role = c( "aut","cph" ), comment = "parallel coordinates reusable chart,
@@ -10,9 +10,9 @@ Authors@R: c( person("Mike", "Bostock", role = c("aut", "cph"), comment =
     person("Mark","Albrecht",role = c("ctb"),comment = "Shiny output and example",
     email="malbrech@nmdp.org"))
 Maintainer: Kenton Russell <kent.russell@timelyportfolio.com>
-Description: Create interactive parallel coordinates charts with this
-    htmlwidget wrapper for d3.js
-    \href{http://syntagmatic.github.io/parallel-coordinates/}{parallel-coordinates}.
+Description: Create interactive parallel coordinates charts with this htmlwidget
+    wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}
+    {parallel-coordinates}.
 Depends:
     R (>= 3.1.2)
 License: MIT + file LICENSE
@@ -23,3 +23,4 @@ Suggests:
     knitr,
     testthat
 VignetteBuilder: knitr
+RoxygenNote: 4.1.1.9001
