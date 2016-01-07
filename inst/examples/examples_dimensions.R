@@ -15,7 +15,7 @@ parcoords(
 parcoords(
   mtcars,
   brushMode = "2d",
-  #reorderable = TRUE,
+  reorderable = TRUE,
   dimensions = list(
     cyl = list(
       tickValues = c(4,6,8)
@@ -46,6 +46,7 @@ function(){
   // duplicated from the widget js code
   //  to make sure reorderable and brushes work
   if( this.x.options.reorderable ) {
+    this.parcoords.remove
     this.parcoords.reorderable();
   } else {
     this.parcoords.createAxes();
@@ -62,5 +63,17 @@ function(){
 "     ,
       paste0(sort(shQuote(rownames(mtcars))),collapse=",")
     ))
+  )
+)
+
+
+parcoords(
+  mtcars
+  ,rownames = F
+  ,dimensions = list(
+    cyl = list(
+      title = "cylinder",
+      tickValues = unique(mtcars$cyl)
+    )
   )
 )
