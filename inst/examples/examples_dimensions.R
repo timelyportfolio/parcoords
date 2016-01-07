@@ -41,12 +41,12 @@ function(){
         this.parcoords.dimensions()['cyl'].yscale.domain().reverse()
       );
 
-  this.parcoords.render()
+  this.parcoords.removeAxes();
+  this.parcoords.render();
 
   // duplicated from the widget js code
   //  to make sure reorderable and brushes work
   if( this.x.options.reorderable ) {
-    this.parcoords.remove
     this.parcoords.reorderable();
   } else {
     this.parcoords.createAxes();
