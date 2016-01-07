@@ -34,6 +34,13 @@ function(){
           this.parcoords.height()-this.parcoords.margin().top - this.parcoords.margin().bottom
         ])
 
+  // reverse order of cylinders
+  this.parcoords.dimensions()['cyl']
+      .yscale
+      .domain(
+        this.parcoords.dimensions()['cyl'].yscale.domain().reverse()
+      );
+
   this.parcoords.render()
 
   // duplicated from the widget js code
