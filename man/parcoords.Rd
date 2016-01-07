@@ -7,8 +7,8 @@
 parcoords(data, rownames = T, color = NULL, brushMode = NULL,
   brushPredicate = "and", reorderable = F, axisDots = NULL,
   margin = NULL, composite = NULL, alpha = NULL, queue = F, mode = F,
-  rate = NULL, tasks = NULL, width = NULL, height = NULL,
-  elementId = NULL)
+  rate = NULL, dimensions = NULL, tasks = NULL, width = NULL,
+  height = NULL, elementId = NULL)
 }
 \arguments{
 \item{data}{data.frame with data to use in the chart}
@@ -53,6 +53,8 @@ progressive rendering.  Usually \code{ queue = T } for very large datasets.}
 
 \item{rate}{integer rate at which render will queue; see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_rate}{}
 for a full discussion and some recommendations}
+
+\item{dimensions}{\code{list}}
 
 \item{tasks}{a character string or \code{\link[htmlwidgets]{JS}} or list of
 strings or \code{JS} representing a JavaScript function(s) to run

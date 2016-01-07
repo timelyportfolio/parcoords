@@ -33,6 +33,7 @@
 #'          \code{ mode = "queue" }
 #' @param rate integer rate at which render will queue; see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_rate}{}
 #'          for a full discussion and some recommendations
+#' @param dimensions \code{list}
 #' @param tasks a character string or \code{\link[htmlwidgets]{JS}} or list of
 #'          strings or \code{JS} representing a JavaScript function(s) to run
 #'          after the \code{parcoords} has rendered.  These provide an opportunity
@@ -117,6 +118,7 @@ parcoords <- function(
   , queue = F
   , mode = F
   , rate = NULL
+  , dimensions = NULL
   , tasks = NULL
   , width = NULL
   , height = NULL
@@ -197,6 +199,7 @@ parcoords <- function(
       , alpha = alpha
       , mode = mode
       , rate = rate
+      , dimensions = dimensions
       , width = width
       , height = height
     )
