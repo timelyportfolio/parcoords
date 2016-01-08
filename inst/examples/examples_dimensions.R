@@ -14,7 +14,8 @@ parcoords(
 
 parcoords(
   mtcars,
-  brushMode = "2d",
+  rownames = TRUE,
+  brushMode = "1d",
   reorderable = TRUE,
   dimensions = list(
     cyl = list(
@@ -26,6 +27,7 @@ parcoords(
 "
 function(){
   debugger
+
   this.parcoords.dimensions()['names']
       .yscale = d3.scale.ordinal()
         .domain([%s])
@@ -53,6 +55,8 @@ function(){
   }
 
   if( this.x.options.brushMode ) {
+    // reset the brush with None
+    this.parcoords.brushMode('None')
     this.parcoords.brushMode(this.x.options.brushMode);
     this.parcoords.brushPredicate(this.x.options.brushPredicate);
   }
@@ -70,6 +74,8 @@ function(){
 parcoords(
   mtcars
   ,rownames = F
+  ,brushMode = "1d-multi"
+  ,brushPredicate = "OR"
   ,dimensions = list(
     cyl = list(
       title = "cylinder",

@@ -20,6 +20,7 @@ HTMLWidgets.widget({
     //      someone supplies data in an atypical way
     if( x.data.constructor.name === "Object" ){
       // use HTMLWidgets function to convert to an array of objects (row format)
+/*
       //  with experimental dimensions
       //  bug with hideAxis so remove rownames from data
       if( typeof x.options.rownames == "undefined" ||
@@ -33,6 +34,7 @@ HTMLWidgets.widget({
               })
         x.data = tempdata;
       }
+*/
       x.data = HTMLWidgets.dataframeToD3( x.data )
     }
 
@@ -44,13 +46,6 @@ HTMLWidgets.widget({
     var parcoords = d3.parcoords()("#" + el.id)
       .data( x.data );
 
-/* remove this because of bug with experimental dimensions
-   handle for now by removing rownames from the data
-    if( typeof x.options.rownames == "undefined" || x.options.rownames === false ) {
-      //rownames = F so hide the axis
-      parcoords.hideAxis(["names"]);
-    }
-*/
     //identify the brushed elements and return those data IDs to Rshiny
     //the parcoords.on("brush",function(d)){} only works with 1D-axes selection
     if (HTMLWidgets.shinyMode){
@@ -90,6 +85,17 @@ HTMLWidgets.widget({
         console.log( "key/option: " + k + " is not available for customization." )
       }
     })
+
+
+    // at one point thought I should
+    //   remove this because of bug with experimental dimensions
+    //    and handle for now by removing rownames from the data
+    // but instead I just had to move this piece to here
+    if( typeof x.options.rownames == "undefined" || x.options.rownames === false ) {
+      //rownames = F so hide the axis
+      parcoords.hideAxis(["names"]);
+    }
+
 
     // color option will require some custom handling
     //   if color is an object with colorScale and colorBy
