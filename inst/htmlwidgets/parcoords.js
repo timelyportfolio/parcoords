@@ -11,7 +11,16 @@ HTMLWidgets.widget({
     var draw = function(){
 
       var x = instance.x;
-      var parcoords = instance.parcoords;
+
+
+      //ugly but currently have to clear out
+      //  each time to get proper render
+      // delete all children of el
+      //  possibly revisit to see if we should be a little more delicate
+      d3.select( el ).selectAll("*").remove();
+      // create our parallel coordinates
+      var parcoords = d3.parcoords()("#" + el.id)
+        .data( x.data );
 
       if( typeof x.options.rownames == "undefined" || x.options.rownames === false ) {
         //rownames = F so hide the axis
@@ -123,6 +132,17 @@ HTMLWidgets.widget({
           t.call({el:el,parcoords:parcoords});
         });
       }
+
+      // use expando to attach parcoords to the element
+      //  this duplicates the step below
+      //  but might make it easier for a user
+      //  to manipulate the parcoords
+      //  if they are not familiar with the
+      //  internals of htmlwidgets
+      el.parcoords = parcoords;
+      // also attach the parallel coordinates and x to instance
+      instance.parcoords = parcoords;
+      instance.x = x;
     };
 
     return {
@@ -140,24 +160,6 @@ HTMLWidgets.widget({
           x.data = HTMLWidgets.dataframeToD3( x.data )
         }
 
-        // delete all children of el
-        //  possibly revisit to see if we should be a little more delicate
-        d3.select( el ).selectAll("*").remove();
-
-        // create our parallel coordinates
-        var parcoords = d3.parcoords()("#" + el.id)
-          .data( x.data );
-
-
-        // use expando to attach parcoords to the element
-        //  this duplicates the step below
-        //  but might make it easier for a user
-        //  to manipulate the parcoords
-        //  if they are not familiar with the
-        //  internals of htmlwidgets
-        el.parcoords = parcoords;
-        // also attach the parallel coordinates and x to instance
-        instance.parcoords = parcoords;
         instance.x = x;
 
         draw();
