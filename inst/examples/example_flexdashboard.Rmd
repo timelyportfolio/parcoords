@@ -1,0 +1,38 @@
+---
+title: "Untitled"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: scroll
+---
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+library(parcoords)
+library(d3heatmap)
+```
+
+Page 1
+==========================
+
+Column
+-----------------------------------------------------------------------
+
+### Chart A
+```{r}
+data( mtcars )
+parcoords( mtcars, autoresize=TRUE )
+```
+
+Page 2
+======================================
+
+Column
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+d3heatmap(mtcars, scale = "column", colors = "Blues")
+```
+

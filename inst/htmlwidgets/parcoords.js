@@ -172,9 +172,11 @@ HTMLWidgets.widget({
         //   and in event of bigger data, expensive re-render
         //   will occur
         if(instance.x.autoresize){
+          var w = el.getBoundingClientRect().width;
+          var h = el.getBoundingClientRect().height;
 
-          instance.parcoords.width(width);
-          instance.parcoords.height(height);
+          instance.parcoords.width(w);
+          instance.parcoords.height(h);
 
           draw();
 
