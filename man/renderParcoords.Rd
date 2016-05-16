@@ -11,6 +11,5 @@ Widget render function for use in Shiny
 }
 \seealso{
 \code{\link{parcoordsOutput}}
-
 }
 

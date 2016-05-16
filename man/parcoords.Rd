@@ -7,7 +7,8 @@
 parcoords(data, rownames = T, color = NULL, brushMode = NULL,
   brushPredicate = "and", reorderable = F, axisDots = NULL,
   margin = NULL, composite = NULL, alpha = NULL, queue = F, mode = F,
-  rate = NULL, tasks = NULL, width = NULL, height = NULL)
+  rate = NULL, tasks = NULL, autoresize = FALSE, width = NULL,
+  height = NULL)
 }
 \arguments{
 \item{data}{data.frame with data to use in the chart}
@@ -39,6 +40,9 @@ the logic forthe join with multiple brushes.}
 this will change automatically and might result in unexpected
 behavior.}
 
+\item{composite}{foreground context's composite type
+see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_composite}{parcoords.composite}}
+
 \item{alpha}{opacity from 0 to 1 of the polylines}
 
 \item{queue}{logical (default FALSE) to change rendering mode to queue for
@@ -46,6 +50,9 @@ progressive rendering.  Usually \code{ queue = T } for very large datasets.}
 
 \item{mode}{string see\code{queue} above; \code{ queue = T } will set
 \code{ mode = "queue" }}
+
+\item{rate}{integer rate at which render will queue; see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_rate}{}
+for a full discussion and some recommendations}
 
 \item{tasks}{a character string or \code{\link[htmlwidgets]{JS}} or list of
 strings or \code{JS} representing a JavaScript function(s) to run
@@ -55,6 +62,12 @@ JavaScript \code{call} mechanism, so within the function, \code{this} will
 be an object with {this.el} representing the containing element of the
 \code{parcoords} and {this.parcoords} representing the \code{parcoords}
 instance.}
+
+\item{autoresize}{logical (default FALSE) to auto resize the parcoords
+when the size of the container changes.  This is useful
+in contexts such as rmarkdown slide presentations or
+flexdashboard.  However, this will not be useful if you
+expect bigger data or a more typical html context.}
 
 \item{width}{integer in pixels defining the width of the widget.  Autosizing  to 100%
 of the widget container will occur if \code{ width = NULL }.}
