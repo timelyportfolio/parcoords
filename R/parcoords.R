@@ -41,6 +41,11 @@
 #'          be an object with {this.el} representing the containing element of the
 #'          \code{parcoords} and {this.parcoords} representing the \code{parcoords}
 #'          instance.
+#' @param autoresize logical (default FALSE) to auto resize the parcoords
+#'          when the size of the container changes.  This is useful
+#'          in contexts such as rmarkdown slide presentations or
+#'          flexdashboard.  However, this will not be useful if you
+#'          expect bigger data or a more typical html context.
 #' @param width integer in pixels defining the width of the widget.  Autosizing  to 100%
 #'          of the widget container will occur if \code{ width = NULL }.
 #' @param height integer in pixels defining the height of the widget.  Autosizing to 400px
@@ -117,6 +122,7 @@ parcoords <- function(
   , mode = F
   , rate = NULL
   , tasks = NULL
+  , autoresize = FALSE
   , width = NULL
   , height = NULL
 ) {
@@ -198,6 +204,7 @@ parcoords <- function(
       , width = width
       , height = height
     )
+    , autoresize = autoresize
     , tasks = tasks
   )
 

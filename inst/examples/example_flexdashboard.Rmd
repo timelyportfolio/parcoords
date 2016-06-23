@@ -1,0 +1,52 @@
+---
+title: "Untitled"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: scroll
+---
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+library(parcoords)
+library(d3heatmap)
+```
+
+Page 1
+==========================
+
+Column
+-----------------------------------------------------------------------
+
+### parcoords with autoresize
+```{r}
+data( mtcars )
+parcoords( mtcars, autoresize=TRUE,
+           brushMode = "1d-multi", brushPredicate = "OR" )
+```
+
+Page 2
+==========================
+
+Column
+-----------------------------------------------------------------------
+
+### parcoords without autoresize
+```{r}
+data( mtcars )
+parcoords( mtcars,
+           brushMode = "1d-multi", brushPredicate = "OR" )
+```
+
+Page 3
+======================================
+
+Column
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+d3heatmap(mtcars, scale = "column", colors = "Blues")
+```
+
