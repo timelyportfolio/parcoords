@@ -45,6 +45,7 @@
 #'          of the widget container will occur if \code{ width = NULL }.
 #' @param height integer in pixels defining the height of the widget.  Autosizing to 400px
 #'          of the widget container will occur if \code{ height = NULL }.
+#' @param elementId unique \code{CSS} selector id for the widget.
 #'
 #' @return An object of class \code{htmlwidget} that will
 #' intelligently print itself into HTML in a variety of contexts
@@ -119,6 +120,7 @@ parcoords <- function(
   , tasks = NULL
   , width = NULL
   , height = NULL
+  , elementId = NULL
 ) {
 
   # verify that data is a data.frame
@@ -210,7 +212,8 @@ parcoords <- function(
     x,
     width = width,
     height = height,
-    package = 'parcoords'
+    package = 'parcoords',
+    elementId = elementId
   )
 }
 
