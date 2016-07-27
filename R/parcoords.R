@@ -89,9 +89,10 @@
 #'   library(dplyr)
 #'   data( diamonds, package = "ggplot2" )
 #'   diamonds %>%
-#'     mutate( carat = cut(carat,breaks = c(0,1,2,3,4,5), right =F) ) %>%
+#'     mutate( carat = cut(carat,breaks = pretty(diamonds$carat), right =T) ) %>%
 #'     group_by( carat ) %>%
 #'     summarise_each(funs(mean),-carat) %>%
+#'     select(-c(cut, color, clarity)) %>%
 #'     parcoords(
 #'       rownames= F
 #'       ,color = list(
