@@ -102,6 +102,8 @@
 #'       ,brushMode = "1D"
 #'     )
 #' }
+#'
+#' @example ./inst/examples/examples_dimensions.R
 #' @import htmlwidgets
 #'
 #' @export

@@ -1,5 +1,3 @@
-# devtools::install_github("timelyportfolio/parcoords@feature/dimensions")
-
 library(parcoords)
 
 parcoords(
