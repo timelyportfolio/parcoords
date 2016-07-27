@@ -1,6 +1,6 @@
 Package: parcoords
 Title: htmlwidget for d3.js parallel coordinates chart
-Version: 0.2.2
+Version: 0.3.0
 Authors@R: c( person("Mike", "Bostock", role = c("aut", "cph"), comment =
     "d3.js library in htmlwidgets/lib, http://d3js.org"), person("Kai", "Chang"
     ,role = c( "aut","cph" ), comment = "parallel coordinates reusable chart,

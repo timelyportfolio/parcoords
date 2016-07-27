@@ -64,8 +64,21 @@ HTMLWidgets.widget({
       });
     }
 
+    // handle dimensions;  it appears that parcoords
+    //   detectDimensions does not run if custom dimensions
+    //   are provided, so we'll need to detectDimensions
+    //   and then in any that are specified
+    if( x.options.dimensions ){
+      parcoords.detectDimensions();
+      var dims = parcoords.dimensions();
+      Object.keys(x.options.dimensions).map(function(k){
+        dims[k] = x.options.dimensions[k];
+      })
+      x.options.dimensions = dims;
+    }
+
     // customize our parcoords according to options
-    Object.keys( x.options ).filter(function(k){ return k !== "reorderable" && k !== "brushMode" && k !== "brushPredicate" && k!== "color" && k!=="rownames" }).map( function(k) {
+    Object.keys( x.options ).filter(function(k){ return k !== "reorderable" && k !== "brushMode" && k !== "brushPredicate" && k!== "color" && k!=="rownames"}).map( function(k) {
       // if the key exists within parcoords
       if ( parcoords[k] ){
         if( typeof x.options[k] === "boolean" ){
