@@ -27,9 +27,10 @@ server = function(input, output, session) {
   ###generate a data set to use
   data( diamonds, package = "ggplot2" )
   DiamondData <-   diamonds %>%
-    mutate( carat = cut(carat,breaks = c(0,1,2,3,4,5), right =F) ) %>%
+    mutate( carat = cut(carat,breaks = pretty(diamonds$carat), right =F) ) %>%
     group_by( carat ) %>%
-    summarise_each(funs(mean),-carat)
+    summarise_each(funs(mean),-carat) %>%
+    select(-c(cut, color, clarity))
 
   ###Add an ID field called "DataId" so the js can identify which column is your
   ###unique identifier when brushed and exported back to shiny through input$id_brushed_row_names
