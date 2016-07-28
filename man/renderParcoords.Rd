@@ -5,11 +5,17 @@
 \title{Widget render function for use in Shiny}
 \usage{
 renderParcoords(expr, env = parent.frame(), quoted = FALSE)
+
+renderParcoords(expr, env = parent.frame(), quoted = FALSE)
 }
 \description{
 Widget render function for use in Shiny
+
+Widget render function for use in Shiny
 }
 \seealso{
+\code{\link{parcoordsOutput}}
+
 \code{\link{parcoordsOutput}}
 }
 
