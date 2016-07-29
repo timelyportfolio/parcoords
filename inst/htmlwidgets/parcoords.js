@@ -6,26 +6,39 @@ HTMLWidgets.widget({
 
   factory: function(el, width, height) {
 
-    var instance = {};
+    var instance = { };
 
-    var draw = function(){
+    var draw = function(el, instance){
 
       var x = instance.x;
-
 
       //ugly but currently have to clear out
       //  each time to get proper render
       // delete all children of el
       //  possibly revisit to see if we should be a little more delicate
       d3.select( el ).selectAll("*").remove();
+
+      // if height or width = 0 then bail
+      if(
+        el.getBoundingClientRect().width === 0 ||
+        el.getBoundingClientRect().height === 0
+      ){
+        return;
+      }
+
       // create our parallel coordinates
       var parcoords = d3.parcoords()("#" + el.id)
         .data( x.data );
 
-      if( typeof x.options.rownames == "undefined" || x.options.rownames === false ) {
-        //rownames = F so hide the axis
-        parcoords.hideAxis(["names"]);
-      }
+      // use expando to attach parcoords to the element
+      //  this duplicates the step below
+      //  but might make it easier for a user
+      //  to manipulate the parcoords
+      //  if they are not familiar with the
+      //  internals of htmlwidgets
+      el.parcoords = parcoords;
+      // also attach the parallel coordinates and x to instance
+      instance.parcoords = parcoords;
 
       //identify the brushed elements and return those data IDs to Rshiny
       //the parcoords.on("brush",function(d)){} only works with 1D-axes selection
@@ -45,8 +58,26 @@ HTMLWidgets.widget({
         });
       }
 
+
+      // handle dimensions;  it appears that parcoords
+      //   detectDimensions does not run if custom dimensions
+      //   are provided, so we'll need to detectDimensions
+      //   and then in any that are specified
+      if( x.options.dimensions ){
+        parcoords.detectDimensions();
+        var dims = parcoords.dimensions();
+        // this is ugly but trying to avoid dependency
+        // Object.assign did not work in RStudio
+        Object.keys(x.options.dimensions).map(function(k){
+          Object.keys(x.options.dimensions[k]).map(function(kk){
+            dims[k][kk] = x.options.dimensions[k][kk];
+          })
+        })
+        x.options.dimensions = dims;
+      }
+
       // customize our parcoords according to options
-      Object.keys( x.options ).filter(function(k){ return k !== "reorderable" && k !== "brushMode" && k !== "brushPredicate" && k!== "color" && k!=="rownames" }).map( function(k) {
+      Object.keys( x.options ).filter(function(k){ return k !== "reorderable" && k !== "brushMode" && k !== "brushPredicate" && k!== "color" && k!=="rownames"}).map( function(k) {
         // if the key exists within parcoords
         if ( parcoords[k] ){
           if( typeof x.options[k] === "boolean" ){
@@ -66,6 +97,17 @@ HTMLWidgets.widget({
           console.log( "key/option: " + k + " is not available for customization." )
         }
       })
+
+
+      // at one point thought I should
+      //   remove this because of bug with experimental dimensions
+      //    and handle for now by removing rownames from the data
+      // but instead I just had to move this piece to here
+      if( typeof x.options.rownames == "undefined" || x.options.rownames === false ) {
+        //rownames = F so hide the axis
+        parcoords.hideAxis(["names"]);
+      }
+
 
       // color option will require some custom handling
       //   if color is an object with colorScale and colorBy
@@ -129,20 +171,9 @@ HTMLWidgets.widget({
         }
         x.tasks.map(function(t){
           // for each tasks call the task with el supplied as `this`
-          t.call({el:el,parcoords:parcoords});
+          t.call({el:el,parcoords:parcoords,x:x});
         });
       }
-
-      // use expando to attach parcoords to the element
-      //  this duplicates the step below
-      //  but might make it easier for a user
-      //  to manipulate the parcoords
-      //  if they are not familiar with the
-      //  internals of htmlwidgets
-      el.parcoords = parcoords;
-      // also attach the parallel coordinates and x to instance
-      instance.parcoords = parcoords;
-      instance.x = x;
     };
 
     return {
@@ -162,7 +193,7 @@ HTMLWidgets.widget({
 
         instance.x = x;
 
-        draw();
+        draw(el, instance);
 
       },
 
@@ -174,17 +205,14 @@ HTMLWidgets.widget({
         //   and in event of bigger data, expensive re-render
         //   will occur
         if(instance.x.autoresize){
-          var w = el.getBoundingClientRect().width;
-          var h = el.getBoundingClientRect().height;
 
-          instance.parcoords.width(w);
-          instance.parcoords.height(h);
-
-          draw();
+          draw(el, instance);
 
         }
 
-      }
+      },
+
+      instance: instance
 
     };
   }

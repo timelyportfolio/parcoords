@@ -31,14 +31,30 @@ Page 2
 Column
 -----------------------------------------------------------------------
 
+### parcoords with autoresize
+```{r}
+data( mtcars )
+parcoords( mtcars,
+           brushMode = "1d-multi", brushPredicate = "OR",
+           autoresize = TRUE )
+```
+
+
+Page 3
+==========================
+
+Column
+-----------------------------------------------------------------------
+
 ### parcoords without autoresize
 ```{r}
 data( mtcars )
 parcoords( mtcars,
-           brushMode = "1d-multi", brushPredicate = "OR" )
+           brushMode = "1d-multi", brushPredicate = "OR",
+           autoresize = TRUE )
 ```
 
-Page 3
+Page 4
 ======================================
 
 Column
