@@ -7,10 +7,84 @@
 parcoords(data, rownames = T, color = NULL, brushMode = NULL,
   brushPredicate = "and", reorderable = F, axisDots = NULL,
   margin = NULL, composite = NULL, alpha = NULL, queue = F, mode = F,
-  rate = NULL, tasks = NULL, width = NULL, height = NULL,
-  elementId = NULL)
+  rate = NULL, dimensions = NULL, tasks = NULL, autoresize = FALSE,
+  width = NULL, height = NULL, elementId = NULL)
+
+parcoords(data, rownames = T, color = NULL, brushMode = NULL,
+  brushPredicate = "and", reorderable = F, axisDots = NULL,
+  margin = NULL, composite = NULL, alpha = NULL, queue = F, mode = F,
+  rate = NULL, dimensions = NULL, tasks = NULL, autoresize = FALSE,
+  width = NULL, height = NULL, elementId = NULL)
 }
 \arguments{
+\item{data}{data.frame with data to use in the chart}
+
+\item{rownames}{logical use rownames from the data.frame in the chart.  Regardless of
+this parameter, we will append rownames to the data that we send to JavaScript.
+If \code{rownames} equals \code{FALSE}, then we will use parallel coordinates
+to hide it.}
+
+\item{color}{see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_color}{parcoords.color( color )}.
+Color can be a single color as rgb or hex.  For a color function,
+provide a list( colorScale = , colorBy = ) where colorScale is
+a function such as \code{d3.scale.category10()} and colorBy
+is the column name from the data to determine color.}
+
+\item{brushMode}{string, either \code{"1D-axes"}, \code{"1D-axes-multi"},
+or \code{"2D-strums"}
+giving the type of desired brush behavior for the chart.}
+
+\item{brushPredicate}{string, either \code{"and"} or \code{"or"} giving
+the logic forthe join with multiple brushes.}
+
+\item{reorderable}{logical enable reordering of axes}
+
+\item{axisDots}{logical mark the points where polylines meet an axis with dots}
+
+\item{margin}{list of sizes of margins in pixels.  Currently
+\code{brushMode = "2D-strums"} requires left margin = 0, so
+this will change automatically and might result in unexpected
+behavior.}
+
+\item{composite}{foreground context's composite type
+see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_composite}{parcoords.composite}}
+
+\item{alpha}{opacity from 0 to 1 of the polylines}
+
+\item{queue}{logical (default FALSE) to change rendering mode to queue for
+progressive rendering.  Usually \code{ queue = T } for very large datasets.}
+
+\item{mode}{string see\code{queue} above; \code{ queue = T } will set
+\code{ mode = "queue" }}
+
+\item{rate}{integer rate at which render will queue; see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_rate}{}
+for a full discussion and some recommendations}
+
+\item{dimensions}{\code{list}}
+
+\item{tasks}{a character string or \code{\link[htmlwidgets]{JS}} or list of
+strings or \code{JS} representing a JavaScript function(s) to run
+after the \code{parcoords} has rendered.  These provide an opportunity
+for advanced customization.  Note, the \code{function} will use the
+JavaScript \code{call} mechanism, so within the function, \code{this} will
+be an object with {this.el} representing the containing element of the
+\code{parcoords} and {this.parcoords} representing the \code{parcoords}
+instance.}
+
+\item{autoresize}{logical (default FALSE) to auto resize the parcoords
+when the size of the container changes.  This is useful
+in contexts such as rmarkdown slide presentations or
+flexdashboard.  However, this will not be useful if you
+expect bigger data or a more typical html context.}
+
+\item{width}{integer in pixels defining the width of the widget.  Autosizing  to 100%
+of the widget container will occur if \code{ width = NULL }.}
+
+\item{height}{integer in pixels defining the height of the widget.  Autosizing to 400px
+of the widget container will occur if \code{ height = NULL }.}
+
+\item{elementId}{unique \code{CSS} selector id for the widget.}
+
 \item{data}{data.frame with data to use in the chart}
 
 \item{rownames}{logical use rownames from the data.frame in the chart.  Regardless of
@@ -63,6 +137,12 @@ be an object with {this.el} representing the containing element of the
 \code{parcoords} and {this.parcoords} representing the \code{parcoords}
 instance.}
 
+\item{autoresize}{logical (default FALSE) to auto resize the parcoords
+when the size of the container changes.  This is useful
+in contexts such as rmarkdown slide presentations or
+flexdashboard.  However, this will not be useful if you
+expect bigger data or a more typical html context.}
+
 \item{width}{integer in pixels defining the width of the widget.  Autosizing  to 100%
 of the widget container will occur if \code{ width = NULL }.}
 
@@ -76,8 +156,16 @@ An object of class \code{htmlwidget} that will
 intelligently print itself into HTML in a variety of contexts
 including the R console, within R Markdown documents,
 and within Shiny output bindings.
+
+An object of class \code{htmlwidget} that will
+intelligently print itself into HTML in a variety of contexts
+including the R console, within R Markdown documents,
+and within Shiny output bindings.
 }
 \description{
+Create interactive parallel coordinates charts with this htmlwidget
+wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}{parallel-coordinates}.
+
 Create interactive parallel coordinates charts with this htmlwidget
 wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}{parallel-coordinates}.
 }
@@ -130,5 +218,138 @@ wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}{para
       ,brushMode = "1D"
     )
 }
+\dontrun{
+  # simple example using the mtcars dataset
+  data( mtcars )
+  parcoords( mtcars )
+
+  # various ways to change color
+  #   in these all lines are the specified color
+  parcoords( mtcars, color = "green" )
+  parcoords( mtcars, color=RColorBrewer::brewer.pal(3,"BuPu")[3] )
+  parcoords( mtcars, color = "#f0c" )
+  #   in these we supply a function for our color
+  parcoords(
+    mtcars
+    , color = list(
+       colorBy="cyl"
+       ,colorScale=htmlwidgets::JS('d3.scale.category10()')
+    )
+  )
+  ### be careful; this might strain your system #######
+  ###                                           #######
+  data( diamonds, package = "ggplot2" )
+  parcoords(
+    diamonds
+    ,rownames=F
+    ,brushMode = "1d-axes"
+    ,reorderable=T
+    ,queue = T
+    ,color= list(
+       colorBy="cut"
+       ,colorScale = htmlwidgets::JS("d3.scale.category10()")
+     )
+  )
+  # or if we want to add in a dplyr chain
+  library(dplyr)
+  data( diamonds, package = "ggplot2" )
+  diamonds \%>\%
+    mutate( carat = cut(carat,breaks = pretty(diamonds$carat), right =T) ) \%>\%
+    group_by( carat ) \%>\%
+    summarise_each(funs(mean),-carat) \%>\%
+    select(-c(cut, color, clarity)) \%>\%
+    parcoords(
+      rownames= F
+      ,color = list(
+         colorScale = htmlwidgets::JS('d3.scale.category10()' )
+        , colorBy = "carat"
+      )
+      ,brushMode = "1D"
+    )
+}
+
+library(parcoords)
+
+parcoords(
+  mtcars,
+  dimensions = list(
+    cyl = list(
+      title = "cylinder",
+      tickValues = unique(mtcars$cyl)
+    )
+  )
+)
+
+parcoords(
+  mtcars,
+  rownames = TRUE,
+  brushMode = "1d",
+  reorderable = TRUE,
+  dimensions = list(
+    cyl = list(
+      tickValues = c(4,6,8)
+    )
+  ),
+  tasks = list(
+    htmlwidgets::JS(sprintf(
+"
+function(){
+  debugger
+
+  this.parcoords.dimensions()['names']
+      .yscale = d3.scale.ordinal()
+        .domain([\%s])
+        .rangePoints([
+          1,
+          this.parcoords.height()-this.parcoords.margin().top - this.parcoords.margin().bottom
+        ])
+
+  // reverse order of cylinders
+  this.parcoords.dimensions()['cyl']
+      .yscale
+      .domain(
+        this.parcoords.dimensions()['cyl'].yscale.domain().reverse()
+      );
+
+  this.parcoords.removeAxes();
+  this.parcoords.render();
+
+  // duplicated from the widget js code
+  //  to make sure reorderable and brushes work
+  if( this.x.options.reorderable ) {
+    this.parcoords.reorderable();
+  } else {
+    this.parcoords.createAxes();
+  }
+
+  if( this.x.options.brushMode ) {
+    // reset the brush with None
+    this.parcoords.brushMode('None')
+    this.parcoords.brushMode(this.x.options.brushMode);
+    this.parcoords.brushPredicate(this.x.options.brushPredicate);
+  }
+
+  // delete title from the rownames axis
+  d3.select('#' + this.el.id + ' .dimension .axis > text').remove();
+}
+"     ,
+      paste0(sort(shQuote(rownames(mtcars))),collapse=",")
+    ))
+  )
+)
+
+
+parcoords(
+  mtcars
+  ,rownames = F
+  ,brushMode = "1d-multi"
+  ,brushPredicate = "OR"
+  ,dimensions = list(
+    cyl = list(
+      title = "cylinder",
+      tickValues = unique(mtcars$cyl)
+    )
+  )
+)
 }
 

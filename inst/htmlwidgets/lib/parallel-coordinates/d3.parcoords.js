@@ -2,10 +2,8 @@ d3.parcoords = function(config) {
   var __ = {
     data: [],
     highlighted: [],
-    dimensions: [],
-    dimensionTitles: {},
+    dimensions: {},
     dimensionTitleRotation: 0,
-    types: {},
     brushed: false,
     brushedColor: null,
     alphaOnBrushed: 0.0,
@@ -14,6 +12,8 @@ d3.parcoords = function(config) {
     width: 600,
     height: 300,
     margin: { top: 24, right: 0, bottom: 12, left: 0 },
+    nullValueSeparator: "undefined", // set to "top" or "bottom"
+    nullValueSeparatorPadding: { top: 8, right: 0, bottom: 8, left: 0 },
     color: "#069",
     composite: "source-over",
     alpha: 0.7,
@@ -21,10 +21,26 @@ d3.parcoords = function(config) {
     bundleDimension: null,
     smoothness: 0.0,
     showControlPoints: false,
-    hideAxis : []
+    hideAxis : [],
+    flipAxes: [],
+    animationTime: 1100, // How long it takes to flip the axis when you double click
+    rotateLabels: false
   };
 
   extend(__, config);
+
+  if (config && config.dimensionTitles) {
+    console.warn("dimensionTitles passed in config is deprecated. Add title to dimension object.");
+    d3.entries(config.dimensionTitles).forEach(function(d) {
+      if (__.dimensions[d.key]) {
+        __.dimensions[d.key].title = __.dimensions[d.key].title ? __.dimensions[d.key].title : d.value;
+      } else {
+        __.dimensions[d.key] = {
+          title: d.value
+        };
+      }
+    });
+  }
 var pc = function(selection) {
   selection = pc.selection = d3.select(selection);
 
@@ -44,12 +60,15 @@ var pc = function(selection) {
     .append("svg")
       .attr("width", __.width)
       .attr("height", __.height)
+      .style("font", "14px sans-serif")
+      .style("position", "absolute")
+
     .append("svg:g")
       .attr("transform", "translate(" + __.margin.left + "," + __.margin.top + ")");
 
   return pc;
 };
-var events = d3.dispatch.apply(this,["render", "resize", "highlight", "brush", "brushend", "axesreorder"].concat(d3.keys(__))),
+var events = d3.dispatch.apply(this,["render", "resize", "highlight", "brush", "brushend", "brushstart", "axesreorder"].concat(d3.keys(__))),
     w = function() { return __.width - __.margin.right - __.margin.left; },
     h = function() { return __.height - __.margin.top - __.margin.bottom; },
     flags = {
@@ -60,7 +79,6 @@ var events = d3.dispatch.apply(this,["render", "resize", "highlight", "brush", "
       debug: false
     },
     xscale = d3.scale.ordinal(),
-    yscale = {},
     dragging = {},
     line = d3.svg.line(),
     axis = d3.svg.axis().orient("left").ticks(5),
@@ -90,27 +108,38 @@ var side_effects = d3.dispatch.apply(this,d3.keys(__))
     foregroundQueue.rate(d.value);
   })
   .on("dimensions", function(d) {
-    xscale.domain(__.dimensions);
+    __.dimensions = pc.applyDimensionDefaults(d3.keys(d.value));
+    xscale.domain(pc.getOrderedDimensionKeys());
+    pc.sortDimensions();
     if (flags.interactive){pc.render().updateAxes();}
   })
   .on("bundleDimension", function(d) {
-	  if (!__.dimensions.length) pc.detectDimensions();
-	  if (!(__.dimensions[0] in yscale)) pc.autoscale();
-	  if (typeof d.value === "number") {
-		  if (d.value < __.dimensions.length) {
-			  __.bundleDimension = __.dimensions[d.value];
-		  } else if (d.value < __.hideAxis.length) {
-			  __.bundleDimension = __.hideAxis[d.value];
-		  }
-	  } else {
-		  __.bundleDimension = d.value;
-	  }
+      if (!d3.keys(__.dimensions).length) pc.detectDimensions();
+      pc.autoscale();
+      if (typeof d.value === "number") {
+          if (d.value < d3.keys(__.dimensions).length) {
+              __.bundleDimension = __.dimensions[d.value];
+          } else if (d.value < __.hideAxis.length) {
+              __.bundleDimension = __.hideAxis[d.value];
+          }
+      } else {
+          __.bundleDimension = d.value;
+      }
 
-	  __.clusterCentroids = compute_cluster_centroids(__.bundleDimension);
+      __.clusterCentroids = compute_cluster_centroids(__.bundleDimension);
+    if (flags.interactive){pc.render();}
   })
   .on("hideAxis", function(d) {
-	  if (!__.dimensions.length) pc.detectDimensions();
-	  pc.dimensions(without(__.dimensions, d.value));
+    pc.dimensions(pc.applyDimensionDefaults());
+    pc.dimensions(without(__.dimensions, d.value));
+  })
+  .on("flipAxes", function(d) {
+    if (d.value && d.value.length) {
+        d.value.forEach(function(axis) {
+            flipAxisAndUpdatePCP(axis);
+        });
+        pc.updateAxes(0);
+    }
   });
 
 // expose the state of the chart
@@ -126,29 +155,46 @@ d3.rebind(pc, events, "on");
 // getter/setter with event firing
 function getset(obj,state,events)  {
   d3.keys(state).forEach(function(key) {
-    obj[key] = function(x) {
-      if (!arguments.length) {
-		return state[key];
-	}
-      var old = state[key];
-      state[key] = x;
-      side_effects[key].call(pc,{"value": x, "previous": old});
-      events[key].call(pc,{"value": x, "previous": old});
-      return obj;
-    };
+      obj[key] = function(x) {
+        if (!arguments.length) {
+          return state[key];
+        }
+        if (key === 'dimensions' && Object.prototype.toString.call(x) === '[object Array]') {
+          console.warn("pc.dimensions([]) is deprecated, use pc.dimensions({})");
+          x = pc.applyDimensionDefaults(x);
+        }
+        var old = state[key];
+        state[key] = x;
+        side_effects[key].call(pc,{"value": x, "previous": old});
+        events[key].call(pc,{"value": x, "previous": old});
+        return obj;
+      };
   });
 };
 
 function extend(target, source) {
-  for (key in source) {
+  for (var key in source) {
     target[key] = source[key];
   }
   return target;
 };
 
-function without(arr, item) {
-  return arr.filter(function(elem) { return item.indexOf(elem) === -1; })
+function without(arr, items) {
+  items.forEach(function (el) {
+    delete arr[el];
+  });
+  return arr;
 };
+/** adjusts an axis' default range [h()+1, 1] if a NullValueSeparator is set */
+function getRange() {
+	if (__.nullValueSeparator=="bottom") {
+		return [h()+1-__.nullValueSeparatorPadding.bottom-__.nullValueSeparatorPadding.top, 1];
+	} else if (__.nullValueSeparator=="top") {
+		return [h()+1, 1+__.nullValueSeparatorPadding.bottom+__.nullValueSeparatorPadding.top];
+	}
+	return [h()+1, 1];
+};
+
 pc.autoscale = function() {
   // yscale
   var defaultScales = {
@@ -161,12 +207,12 @@ pc.autoscale = function() {
       if (extent[0] === extent[1]) {
         return d3.scale.ordinal()
           .domain([extent[0]])
-          .rangePoints([h()+1, 1]);
+          .rangePoints(getRange());
       }
 
       return d3.time.scale()
         .domain(extent)
-        .range([h()+1, 1]);
+        .range(getRange());
     },
     "number": function(k) {
       var extent = d3.extent(__.data, function(d) { return +d[k]; });
@@ -175,12 +221,12 @@ pc.autoscale = function() {
       if (extent[0] === extent[1]) {
         return d3.scale.ordinal()
           .domain([extent[0]])
-          .rangePoints([h()+1, 1]);
+          .rangePoints(getRange());
       }
 
       return d3.scale.linear()
         .domain(extent)
-        .range([h()+1, 1]);
+        .range(getRange());
     },
     "string": function(k) {
       var counts = {},
@@ -189,6 +235,9 @@ pc.autoscale = function() {
       // Let's get the count for each value so that we can sort the domain based
       // on the number of items for each value.
       __.data.map(function(p) {
+        if (p[k] === undefined && __.nullValueSeparator!== "undefined"){
+          return; // null values will be drawn beyond the horizontal null value separator!
+        }
         if (counts[p[k]] === undefined) {
           counts[p[k]] = 1;
         } else {
@@ -202,94 +251,132 @@ pc.autoscale = function() {
 
       return d3.scale.ordinal()
         .domain(domain)
-        .rangePoints([h()+1, 1]);
+        .rangePoints(getRange());
     }
   };
 
-  __.dimensions.forEach(function(k) {
-    yscale[k] = defaultScales[__.types[k]](k);
-  });
-
-  __.hideAxis.forEach(function(k) {
-    yscale[k] = defaultScales[__.types[k]](k);
+  d3.keys(__.dimensions).forEach(function(k) {
+    if (!__.dimensions[k].yscale){
+      __.dimensions[k].yscale = defaultScales[__.dimensions[k].type](k);
+    }
   });
 
   // xscale
   xscale.rangePoints([0, w()], 1);
 
+  // Retina display, etc.
+  var devicePixelRatio = window.devicePixelRatio || 1;
+
   // canvas sizes
   pc.selection.selectAll("canvas")
       .style("margin-top", __.margin.top + "px")
       .style("margin-left", __.margin.left + "px")
-      .attr("width", w()+2)
-      .attr("height", h()+2);
+      .style("width", (w()+2) + "px")
+      .style("height", (h()+2) + "px")
+      .attr("width", (w()+2) * devicePixelRatio)
+      .attr("height", (h()+2) * devicePixelRatio);
 
   // default styles, needs to be set when canvas width changes
   ctx.foreground.strokeStyle = __.color;
   ctx.foreground.lineWidth = 1.4;
   ctx.foreground.globalCompositeOperation = __.composite;
   ctx.foreground.globalAlpha = __.alpha;
+  ctx.foreground.scale(devicePixelRatio, devicePixelRatio);
   ctx.brushed.strokeStyle = __.brushedColor;
   ctx.brushed.lineWidth = 1.4;
   ctx.brushed.globalCompositeOperation = __.composite;
   ctx.brushed.globalAlpha = __.alpha;
+  ctx.brushed.scale(devicePixelRatio, devicePixelRatio);
   ctx.highlight.lineWidth = 3;
+  ctx.highlight.scale(devicePixelRatio, devicePixelRatio);
 
   return this;
 };
 
 pc.scale = function(d, domain) {
-	yscale[d].domain(domain);
+  __.dimensions[d].yscale.domain(domain);
 
-	return this;
+  return this;
 };
 
 pc.flip = function(d) {
-	//yscale[d].domain().reverse();					// does not work
-	yscale[d].domain(yscale[d].domain().reverse()); // works
+  //__.dimensions[d].yscale.domain().reverse();                               // does not work
+  __.dimensions[d].yscale.domain(__.dimensions[d].yscale.domain().reverse()); // works
 
-	return this;
+  return this;
 };
 
 pc.commonScale = function(global, type) {
-	var t = type || "number";
-	if (typeof global === 'undefined') {
-		global = true;
-	}
+  var t = type || "number";
+  if (typeof global === 'undefined') {
+    global = true;
+  }
 
-	// scales of the same type
-	var scales = __.dimensions.concat(__.hideAxis).filter(function(p) {
-		return __.types[p] == t;
-	});
+  // try to autodetect dimensions and create scales
+  if (!d3.keys(__.dimensions).length) {
+    pc.detectDimensions()
+  }
+  pc.autoscale();
 
-	if (global) {
-		var extent = d3.extent(scales.map(function(p,i) {
-				return yscale[p].domain();
-			}).reduce(function(a,b) {
-				return a.concat(b);
-			}));
+  // scales of the same type
+  var scales = d3.keys(__.dimensions).filter(function(p) {
+    return __.dimensions[p].type == t;
+  });
 
-		scales.forEach(function(d) {
-			yscale[d].domain(extent);
-		});
+  if (global) {
+    var extent = d3.extent(scales.map(function(d,i) {
+      return __.dimensions[d].yscale.domain();
+    }).reduce(function(a,b) {
+      return a.concat(b);
+    }));
 
-	} else {
-		scales.forEach(function(k) {
-			yscale[k].domain(d3.extent(__.data, function(d) { return +d[k]; }));
-		});
-	}
+    scales.forEach(function(d) {
+      __.dimensions[d].yscale.domain(extent);
+    });
 
-	// update centroids
-	if (__.bundleDimension !== null) {
-		pc.bundleDimension(__.bundleDimension);
-	}
+  } else {
+    scales.forEach(function(d) {
+      __.dimensions[d].yscale.domain(d3.extent(__.data, function(d) { return +d[k]; }));
+    });
+  }
 
-	return this;
+  // update centroids
+  if (__.bundleDimension !== null) {
+    pc.bundleDimension(__.bundleDimension);
+  }
+
+  return this;
 };
 pc.detectDimensions = function() {
-  pc.types(pc.detectDimensionTypes(__.data));
-  pc.dimensions(d3.keys(pc.types()));
+  pc.dimensions(pc.applyDimensionDefaults());
   return this;
+};
+
+pc.applyDimensionDefaults = function(dims) {
+  var types = pc.detectDimensionTypes(__.data);
+  dims = dims ? dims : d3.keys(types);
+  var newDims = {};
+  var currIndex = 0;
+  dims.forEach(function(k) {
+    newDims[k] = __.dimensions[k] ? __.dimensions[k] : {};
+    //Set up defaults
+    newDims[k].orient= newDims[k].orient ? newDims[k].orient : 'left';
+    newDims[k].ticks= newDims[k].ticks != null ? newDims[k].ticks : 5;
+    newDims[k].innerTickSize= newDims[k].innerTickSize != null ? newDims[k].innerTickSize : 6;
+    newDims[k].outerTickSize= newDims[k].outerTickSize != null ? newDims[k].outerTickSize : 0;
+    newDims[k].tickPadding= newDims[k].tickPadding != null ? newDims[k].tickPadding : 3;
+    newDims[k].type= newDims[k].type ? newDims[k].type : types[k];
+
+    newDims[k].index = newDims[k].index != null ? newDims[k].index : currIndex;
+    currIndex++;
+  });
+  return newDims;
+};
+
+pc.getOrderedDimensionKeys = function(){
+  return d3.keys(__.dimensions).sort(function(x, y){
+    return d3.ascending(__.dimensions[x].index, __.dimensions[y].index);
+  });
 };
 
 // a better "typeof" from this post: http://stackoverflow.com/questions/7390426/better-way-to-get-type-of-a-javascript-variable
@@ -300,8 +387,8 @@ pc.toType = function(v) {
 // try to coerce to number before returning type
 pc.toTypeCoerceNumbers = function(v) {
   if ((parseFloat(v) == v) && (v != null)) {
-	return "number";
-}
+    return "number";
+  }
   return pc.toType(v);
 };
 
@@ -310,14 +397,16 @@ pc.detectDimensionTypes = function(data) {
   var types = {};
   d3.keys(data[0])
     .forEach(function(col) {
-      types[col] = pc.toTypeCoerceNumbers(data[0][col]);
+      types[isNaN(Number(col)) ? col : parseInt(col)] = pc.toTypeCoerceNumbers(data[0][col]);
     });
   return types;
 };
 pc.render = function() {
   // try to autodetect dimensions and create scales
-  if (!__.dimensions.length) pc.detectDimensions();
-  if (!(__.dimensions[0] in yscale)) pc.autoscale();
+  if (!d3.keys(__.dimensions).length) {
+    pc.detectDimensions()
+  }
+  pc.autoscale();
 
   pc.render[__.mode]();
 
@@ -326,8 +415,7 @@ pc.render = function() {
 };
 
 pc.renderBrushed = function() {
-  if (!__.dimensions.length) pc.detectDimensions();
-  if (!(__.dimensions[0] in yscale)) pc.autoscale();
+  if (!d3.keys(__.dimensions).length) pc.detectDimensions();
 
   pc.renderBrushed[__.mode]();
 
@@ -347,7 +435,7 @@ function isBrushed() {
     }
   }
   return false;
-}
+};
 
 pc.render.default = function() {
   pc.clear('foreground');
@@ -391,13 +479,14 @@ pc.renderBrushed.queue = function() {
   } else {
     brushedQueue([]); // This is needed to clear the currently brushed items
   }
-};function compute_cluster_centroids(d) {
+};
+function compute_cluster_centroids(d) {
 
 	var clusterCentroids = d3.map();
 	var clusterCounts = d3.map();
 	// determine clusterCounts
 	__.data.forEach(function(row) {
-		var scaled = yscale[d](row[d]);
+		var scaled = __.dimensions[d].yscale(row[d]);
 		if (!clusterCounts.has(scaled)) {
 			clusterCounts.set(scaled, 0);
 		}
@@ -406,8 +495,8 @@ pc.renderBrushed.queue = function() {
 	});
 
 	__.data.forEach(function(row) {
-		__.dimensions.map(function(p, i) {
-			var scaled = yscale[d](row[d]);
+		d3.keys(__.dimensions).map(function(p, i) {
+			var scaled = __.dimensions[d].yscale(row[d]);
 			if (!clusterCentroids.has(scaled)) {
 				var map = d3.map();
 				clusterCentroids.set(scaled, map);
@@ -416,7 +505,7 @@ pc.renderBrushed.queue = function() {
 				clusterCentroids.get(scaled).set(p, 0);
 			}
 			var value = clusterCentroids.get(scaled).get(p);
-			value += yscale[p](row[p]) / clusterCounts.get(scaled);
+			value += __.dimensions[p].yscale(row[p]) / clusterCounts.get(scaled);
 			clusterCentroids.get(scaled).set(p, value);
 		});
 	});
@@ -428,22 +517,22 @@ pc.renderBrushed.queue = function() {
 function compute_centroids(row) {
 	var centroids = [];
 
-	var p = __.dimensions;
+	var p = d3.keys(__.dimensions);
 	var cols = p.length;
 	var a = 0.5;			// center between axes
 	for (var i = 0; i < cols; ++i) {
 		// centroids on 'real' axes
 		var x = position(p[i]);
-		var y = yscale[p[i]](row[p[i]]);
+		var y = __.dimensions[p[i]].yscale(row[p[i]]);
 		centroids.push($V([x, y]));
 
 		// centroids on 'virtual' axes
 		if (i < cols - 1) {
 			var cx = x + a * (position(p[i+1]) - x);
-			var cy = y + a * (yscale[p[i+1]](row[p[i+1]]) - y);
+			var cy = y + a * (__.dimensions[p[i+1]].yscale(row[p[i+1]]) - y);
 			if (__.bundleDimension !== null) {
-				var leftCentroid = __.clusterCentroids.get(yscale[__.bundleDimension](row[__.bundleDimension])).get(p[i]);
-				var rightCentroid = __.clusterCentroids.get(yscale[__.bundleDimension](row[__.bundleDimension])).get(p[i+1]);
+				var leftCentroid = __.clusterCentroids.get(__.dimensions[__.bundleDimension].yscale(row[__.bundleDimension])).get(p[i]);
+				var rightCentroid = __.clusterCentroids.get(__.dimensions[__.bundleDimension].yscale(row[__.bundleDimension])).get(p[i+1]);
 				var centroid = 0.5 * (leftCentroid + rightCentroid);
 				cy = centroid + (1 - __.bundlingStrength) * (cy - centroid);
 			}
@@ -492,9 +581,9 @@ pc.axisDots = function(r) {
 	var endAngle = 2 * Math.PI;
 	ctx.globalAlpha = d3.min([ 1 / Math.pow(__.data.length, 1 / 2), 1 ]);
 	__.data.forEach(function(d) {
-		__.dimensions.map(function(p, i) {
+		d3.entries(__.dimensions).forEach(function(p, i) {
 			ctx.beginPath();
-			ctx.arc(position(p), yscale[p](d[p]), r, startAngle, endAngle);
+			ctx.arc(position(p), __.dimensions[p.key].yscale(d[p]), r, startAngle, endAngle);
 			ctx.stroke();
 			ctx.fill();
 		});
@@ -544,15 +633,27 @@ function paths(data, ctx) {
 	ctx.stroke();
 };
 
+// returns the y-position just beyond the separating null value line
+function getNullPosition() {
+	if (__.nullValueSeparator=="bottom") {
+		return h()+1;
+	} else if (__.nullValueSeparator=="top") {
+		return 1;
+	} else {
+		console.log("A value is NULL, but nullValueSeparator is not set; set it to 'bottom' or 'top'.");
+	}
+	return h()+1;
+};
+
 function single_path(d, ctx) {
-	__.dimensions.map(function(p, i) {
+	d3.entries(__.dimensions).forEach(function(p, i) {  //p isn't really p
 		if (i == 0) {
-			ctx.moveTo(position(p), yscale[p](d[p]));
+			ctx.moveTo(position(p.key), typeof d[p.key] =='undefined' ? getNullPosition() : __.dimensions[p.key].yscale(d[p.key]));
 		} else {
-			ctx.lineTo(position(p), yscale[p](d[p]));
+			ctx.lineTo(position(p.key), typeof d[p.key] =='undefined' ? getNullPosition() : __.dimensions[p.key].yscale(d[p.key]));
 		}
 	});
-}
+};
 
 function path_brushed(d, i) {
   if (__.brushedColor !== null) {
@@ -561,7 +662,7 @@ function path_brushed(d, i) {
     ctx.brushed.strokeStyle = d3.functor(__.color)(d, i);
   }
   return color_path(d, ctx.brushed)
-}
+};
 
 function path_foreground(d, i) {
   ctx.foreground.strokeStyle = d3.functor(__.color)(d, i);
@@ -595,13 +696,15 @@ function flipAxisAndUpdatePCP(dimension) {
 
   d3.select(this.parentElement)
     .transition()
-      .duration(1100)
-      .call(axis.scale(yscale[dimension]));
+      .duration(__.animationTime)
+      .call(axis.scale(__.dimensions[dimension].yscale));
 
   pc.render();
 }
 
 function rotateLabels() {
+  if (!__.rotateLabels) return;
+  
   var delta = d3.event.deltaY;
   delta = delta < 0 ? -5 : delta;
   delta = delta > 0 ? 5 : delta;
@@ -613,7 +716,7 @@ function rotateLabels() {
 }
 
 function dimensionLabels(d) {
-  return d in __.dimensionTitles ? __.dimensionTitles[d] : d;  // dimension display names
+  return __.dimensions[d].title ? __.dimensions[d].title : d;  // dimension display names
 }
 
 pc.createAxes = function() {
@@ -621,16 +724,32 @@ pc.createAxes = function() {
 
   // Add a group element for each dimension.
   g = pc.svg.selectAll(".dimension")
-      .data(__.dimensions, function(d) { return d; })
+      .data(pc.getOrderedDimensionKeys(), function(d) {
+        return d;
+      })
     .enter().append("svg:g")
       .attr("class", "dimension")
-      .attr("transform", function(d) { return "translate(" + xscale(d) + ")"; });
+      .attr("transform", function(d) {
+        return "translate(" + xscale(d) + ")";
+      });
 
   // Add an axis and title.
   g.append("svg:g")
       .attr("class", "axis")
       .attr("transform", "translate(0,0)")
-      .each(function(d) { d3.select(this).call(axis.scale(yscale[d])); })
+      .each(function(d) {
+        var axisElement = d3.select(this).call( pc.applyAxisConfig(axis, __.dimensions[d]) );
+
+        axisElement.selectAll("path")
+            .style("fill", "none")
+            .style("stroke", "#222")
+            .style("shape-rendering", "crispEdges");
+
+        axisElement.selectAll("line")
+            .style("fill", "none")
+            .style("stroke", "#222")
+            .style("shape-rendering", "crispEdges");
+      })
     .append("svg:text")
       .attr({
         "text-anchor": "middle",
@@ -643,17 +762,44 @@ pc.createAxes = function() {
       .on("dblclick", flipAxisAndUpdatePCP)
       .on("wheel", rotateLabels);
 
+  if (__.nullValueSeparator=="top") {
+    pc.svg.append("line")
+      .attr("x1", 0)
+      .attr("y1", 1+__.nullValueSeparatorPadding.top)
+      .attr("x2", w())
+      .attr("y2", 1+__.nullValueSeparatorPadding.top)
+      .attr("stroke-width", 1)
+      .attr("stroke", "#777")
+      .attr("fill", "none")
+      .attr("shape-rendering", "crispEdges");
+  } else if (__.nullValueSeparator=="bottom") {
+    pc.svg.append("line")
+      .attr("x1", 0)
+      .attr("y1", h()+1-__.nullValueSeparatorPadding.bottom)
+      .attr("x2", w())
+      .attr("y2", h()+1-__.nullValueSeparatorPadding.bottom)
+      .attr("stroke-width", 1)
+      .attr("stroke", "#777")
+      .attr("fill", "none")
+      .attr("shape-rendering", "crispEdges");
+  }
+
   flags.axes= true;
   return this;
 };
 
 pc.removeAxes = function() {
   g.remove();
+  g = undefined;
   return this;
 };
 
-pc.updateAxes = function() {
-  var g_data = pc.svg.selectAll(".dimension").data(__.dimensions);
+pc.updateAxes = function(animationTime) {
+  if (typeof animationTime === 'undefined') {
+    animationTime = __.animationTime;
+  }
+
+  var g_data = pc.svg.selectAll(".dimension").data(pc.getOrderedDimensionKeys());
 
   // Enter
   g_data.enter().append("svg:g")
@@ -663,7 +809,19 @@ pc.updateAxes = function() {
     .append("svg:g")
       .attr("class", "axis")
       .attr("transform", "translate(0,0)")
-      .each(function(d) { d3.select(this).call(axis.scale(yscale[d])); })
+      .each(function(d) {
+        var axisElement = d3.select(this).call( pc.applyAxisConfig(axis, __.dimensions[d]) );
+
+        axisElement.selectAll("path")
+            .style("fill", "none")
+            .style("stroke", "#222")
+            .style("shape-rendering", "crispEdges");
+
+        axisElement.selectAll("line")
+            .style("fill", "none")
+            .style("stroke", "#222")
+            .style("shape-rendering", "crispEdges");
+      })
     .append("svg:text")
       .attr({
         "text-anchor": "middle",
@@ -680,13 +838,12 @@ pc.updateAxes = function() {
   g_data.attr("opacity", 0);
   g_data.select(".axis")
     .transition()
-      .duration(1100)
-      .each(function(d) {
-        d3.select(this).call(axis.scale(yscale[d]));
+      .duration(animationTime)
+      .each(function(d) { d3.select(this).call( pc.applyAxisConfig(axis, __.dimensions[d]) )
       });
   g_data.select(".label")
     .transition()
-      .duration(1100)
+      .duration(animationTime)
       .text(dimensionLabels)
       .attr("transform", "translate(0,-5) rotate(" + __.dimensionTitleRotation + ")");
 
@@ -694,14 +851,15 @@ pc.updateAxes = function() {
   g_data.exit().remove();
 
   g = pc.svg.selectAll(".dimension");
-  g.transition().duration(1100)
+  g.transition().duration(animationTime)
     .attr("transform", function(p) { return "translate(" + position(p) + ")"; })
     .style("opacity", 1);
 
   pc.svg.selectAll(".axis")
     .transition()
-      .duration(1100)
-      .each(function(d) { d3.select(this).call(axis.scale(yscale[d])); });
+      .duration(animationTime)
+      .each(function(d) { d3.select(this).call( pc.applyAxisConfig(axis, __.dimensions[d]) );
+      });
 
   if (flags.brushable) pc.brushable();
   if (flags.reorderable) pc.reorderable();
@@ -711,6 +869,17 @@ pc.updateAxes = function() {
     pc.brushMode(mode);
   }
   return this;
+};
+
+pc.applyAxisConfig = function(axis, dimension) {
+  return axis.scale(dimension.yscale)
+    .orient(dimension.orient)
+    .ticks(dimension.ticks)
+    .tickValues(dimension.tickValues)
+    .innerTickSize(dimension.innerTickSize)
+    .outerTickSize(dimension.outerTickSize)
+    .tickPadding(dimension.tickPadding)
+    .tickFormat(dimension.tickFormat)
 };
 
 // Jason Davies, http://bl.ocks.org/1341281
@@ -724,21 +893,23 @@ pc.reorderable = function() {
       })
       .on("drag", function(d) {
         dragging[d] = Math.min(w(), Math.max(0, this.__origin__ += d3.event.dx));
-        __.dimensions.sort(function(a, b) { return position(a) - position(b); });
-        xscale.domain(__.dimensions);
+        pc.sortDimensions();
+        xscale.domain(pc.getOrderedDimensionKeys());
         pc.render();
-        g.attr("transform", function(d) { return "translate(" + position(d) + ")"; });
+        g.attr("transform", function(d) {
+          return "translate(" + position(d) + ")";
+        });
       })
       .on("dragend", function(d) {
         // Let's see if the order has changed and send out an event if so.
         var i = 0,
-            j = __.dimensions.indexOf(d),
+            j = __.dimensions[d].index,
             elem = this,
             parent = this.parentElement;
 
         while((elem = elem.previousElementSibling) != null) ++i;
         if (i !== j) {
-          events.axesreorder.call(pc, __.dimensions);
+          events.axesreorder.call(pc, pc.getOrderedDimensionKeys());
           // We now also want to reorder the actual dom elements that represent
           // the axes. That is, the g.dimension elements. If we don't do this,
           // we get a weird and confusing transition when updateAxes is called.
@@ -773,30 +944,17 @@ pc.reorderable = function() {
 // the lowest on the right. Visual values are determined by the data values in
 // the given row.
 pc.reorder = function(rowdata) {
-  var dims = __.dimensions.slice(0);
-  __.dimensions.sort(function(a, b) {
-    var pixelDifference = yscale[a](rowdata[a]) - yscale[b](rowdata[b]);
+  var firstDim = pc.getOrderedDimensionKeys()[0];
 
-    // Array.sort is not necessarily stable, this means that if pixelDifference is zero
-    // the ordering of dimensions might change unexpectedly. This is solved by sorting on
-    // variable name in that case.
-    if (pixelDifference === 0) {
-      return a.localeCompare(b);
-    } // else
-    return pixelDifference;
-  });
-
+  pc.sortDimensionsByRowData(rowdata);
   // NOTE: this is relatively cheap given that:
   // number of dimensions < number of data items
   // Thus we check equality of order to prevent rerendering when this is the case.
   var reordered = false;
-  dims.some(function(val, index) {
-    reordered = val !== __.dimensions[index];
-    return reordered;
-  });
+  reordered = firstDim !== pc.getOrderedDimensionKeys()[0];
 
   if (reordered) {
-    xscale.domain(__.dimensions);
+    xscale.domain(pc.getOrderedDimensionKeys());
     var highlighted = __.highlighted.slice(0);
     pc.unhighlight();
 
@@ -813,6 +971,38 @@ pc.reorder = function(rowdata) {
     }
   }
 }
+
+pc.sortDimensionsByRowData = function(rowdata) {
+  var copy = __.dimensions;
+  var positionSortedKeys = d3.keys(__.dimensions).sort(function(a, b) {
+    var pixelDifference = __.dimensions[a].yscale(rowdata[a]) - __.dimensions[b].yscale(rowdata[b]);
+
+    // Array.sort is not necessarily stable, this means that if pixelDifference is zero
+    // the ordering of dimensions might change unexpectedly. This is solved by sorting on
+    // variable name in that case.
+    if (pixelDifference === 0) {
+      return a.localeCompare(b);
+    } // else
+    return pixelDifference;
+  });
+  __.dimensions = {};
+  positionSortedKeys.forEach(function(p, i){
+    __.dimensions[p] = copy[p];
+    __.dimensions[p].index = i;
+  });
+}
+
+pc.sortDimensions = function() {
+  var copy = __.dimensions;
+  var positionSortedKeys = d3.keys(__.dimensions).sort(function(a, b) {
+    return position(a) - position(b);
+  });
+  __.dimensions = {};
+  positionSortedKeys.forEach(function(p, i){
+    __.dimensions[p] = copy[p];
+    __.dimensions[p].index = i;
+  })
+};
 
 // pairs of adjacent dimensions
 pc.adjacent_pairs = function(arr) {
@@ -904,35 +1094,43 @@ pc.brushMode = function(mode) {
 // brush mode: 1D-Axes
 
 (function() {
-  var brushes = {};
+	var brushes = {};
 
-  function is_brushed(p) {
-    return !brushes[p].empty();
-  }
+	function is_brushed(p) {
+		return !brushes[p].empty();
+	}
 
   // data within extents
   function selected() {
-    var actives = __.dimensions.filter(is_brushed),
+    var actives = d3.keys(__.dimensions).filter(is_brushed),
         extents = actives.map(function(p) { return brushes[p].extent(); });
 
-    // We don't want to return the full data set when there are no axes brushed.
-    // Actually, when there are no axes brushed, by definition, no items are
-    // selected. So, let's avoid the filtering and just return false.
-    //if (actives.length === 0) return false;
+		// We don't want to return the full data set when there are no axes brushed.
+		// Actually, when there are no axes brushed, by definition, no items are
+		// selected. So, let's avoid the filtering and just return false.
+		//if (actives.length === 0) return false;
 
-    // Resolves broken examples for now. They expect to get the full dataset back from empty brushes
-    if (actives.length === 0) return __.data;
+		// Resolves broken examples for now. They expect to get the full dataset back from empty brushes
+		if (actives.length === 0) return __.data;
 
-    // test if within range
-    var within = {
-      "date": function(d,p,dimension) {
-        return extents[dimension][0] <= d[p] && d[p] <= extents[dimension][1]
+		// test if within range
+		var within = {
+			"date": function(d,p,dimension) {
+	if (typeof __.dimensions[p].yscale.rangePoints === "function") { // if it is ordinal
+          return extents[dimension][0] <= __.dimensions[p].yscale(d[p]) && __.dimensions[p].yscale(d[p]) <= extents[dimension][1]
+        } else {
+          return extents[dimension][0] <= d[p] && d[p] <= extents[dimension][1]
+        }
       },
       "number": function(d,p,dimension) {
-        return extents[dimension][0] <= d[p] && d[p] <= extents[dimension][1]
+        if (typeof __.dimensions[p].yscale.rangePoints === "function") { // if it is ordinal
+          return extents[dimension][0] <= __.dimensions[p].yscale(d[p]) && __.dimensions[p].yscale(d[p]) <= extents[dimension][1]
+        } else {
+          return extents[dimension][0] <= d[p] && d[p] <= extents[dimension][1]
+        }
       },
       "string": function(d,p,dimension) {
-        return extents[dimension][0] <= yscale[p](d[p]) && yscale[p](d[p]) <= extents[dimension][1]
+        return extents[dimension][0] <= __.dimensions[p].yscale(d[p]) && __.dimensions[p].yscale(d[p]) <= extents[dimension][1]
       }
     };
 
@@ -941,11 +1139,11 @@ pc.brushMode = function(mode) {
         switch(brush.predicate) {
         case "AND":
           return actives.every(function(p, dimension) {
-            return within[__.types[p]](d,p,dimension);
+            return within[__.dimensions[p].type](d,p,dimension);
           });
         case "OR":
           return actives.some(function(p, dimension) {
-            return within[__.types[p]](d,p,dimension);
+            return within[__.dimensions[p].type](d,p,dimension);
           });
         default:
           throw "Unknown brush predicate " + __.brushPredicate;
@@ -953,80 +1151,153 @@ pc.brushMode = function(mode) {
       });
   };
 
-  function brushExtents() {
-    var extents = {};
-    __.dimensions.forEach(function(d) {
-      var brush = brushes[d];
-      if (brush !== undefined && !brush.empty()) {
-        var extent = brush.extent();
-        extent.sort(d3.ascending);
-        extents[d] = extent;
-      }
-    });
-    return extents;
+  function brushExtents(extents) {
+    if(typeof(extents) === 'undefined')
+		{
+			var extents = {};
+			d3.keys(__.dimensions).forEach(function(d) {
+				var brush = brushes[d];
+				if (brush !== undefined && !brush.empty()) {
+					var extent = brush.extent();
+					extent.sort(d3.ascending);
+					extents[d] = extent;
+				}
+			});
+			return extents;
+		}
+		else
+		{
+			//first get all the brush selections
+			var brushSelections = {};
+			g.selectAll('.brush')
+				.each(function(d) {
+					brushSelections[d] = d3.select(this);
+
+			});
+
+			// loop over each dimension and update appropriately (if it was passed in through extents)
+			d3.keys(__.dimensions).forEach(function(d) {
+				if (extents[d] === undefined){
+					return;
+				}
+
+				var brush = brushes[d];
+				if (brush !== undefined) {
+					//update the extent
+					brush.extent(extents[d]);
+
+					//redraw the brush
+					brushSelections[d]
+						.transition()
+						.duration(0)
+						.call(brush);
+
+					//fire some events
+					brush.event(brushSelections[d]);
+				}
+			});
+
+			//redraw the chart
+			pc.renderBrushed();
+
+			return pc;
+		}
   }
 
   function brushFor(axis) {
     var brush = d3.svg.brush();
 
     brush
-      .y(yscale[axis])
-      .on("brushstart", function() { d3.event.sourceEvent.stopPropagation() })
-      .on("brush", function() {
-        brushUpdated(selected());
-      })
-      .on("brushend", function() {
-        events.brushend.call(pc, __.brushed);
-      });
+      .y(__.dimensions[axis].yscale)
+      .on("brushstart", function() {
+				if(d3.event.sourceEvent !== null) {
+					events.brushstart.call(pc, __.brushed);
+					d3.event.sourceEvent.stopPropagation();
+				}
+			})
+			.on("brush", function() {
+				brushUpdated(selected());
+			})
+			.on("brushend", function() {
+				events.brushend.call(pc, __.brushed);
+			});
 
-    brushes[axis] = brush;
-    return brush;
-  }
+		brushes[axis] = brush;
+		return brush;
+	};
 
-  function brushReset(dimension) {
-    __.brushed = false;
-    if (g) {
-      g.selectAll('.brush')
-        .each(function(d) {
-          d3.select(this).call(
-            brushes[d].clear()
-          );
-        });
-      pc.renderBrushed();
-    }
-    return this;
-  };
+	function brushReset(dimension) {
+		if (dimension===undefined) {
+			__.brushed = false;
+			if (g) {
+				g.selectAll('.brush')
+					.each(function(d) {
+						d3.select(this)
+							.transition()
+							.duration(0)
+							.call(brushes[d].clear());
+					});
+				pc.renderBrushed();
+			}
+		}
+		else {
+			if (g) {
+				g.selectAll('.brush')
+					.each(function(d) {
+						if (d!=dimension) return;
+						d3.select(this)
+							.transition()
+							.duration(0)
+							.call(brushes[d].clear());
+						brushes[d].event(d3.select(this));
+					});
+				pc.renderBrushed();
+			}
+		}
+		return this;
+	};
 
-  function install() {
-    if (!g) pc.createAxes();
+	function install() {
+		if (!g) pc.createAxes();
 
-    // Add and store a brush for each axis.
-    g.append("svg:g")
-      .attr("class", "brush")
-      .each(function(d) {
-        d3.select(this).call(brushFor(d));
-      })
-      .selectAll("rect")
-        .style("visibility", null)
-        .attr("x", -15)
-        .attr("width", 30);
+		// Add and store a brush for each axis.
+		var brush = g.append("svg:g")
+			.attr("class", "brush")
+			.each(function(d) {
+				d3.select(this).call(brushFor(d));
+			});
 
-    pc.brushExtents = brushExtents;
-    pc.brushReset = brushReset;
-    return pc;
-  }
+		brush.selectAll("rect")
+				.style("visibility", null)
+				.attr("x", -15)
+				.attr("width", 30);
 
-  brush.modes["1D-axes"] = {
-    install: install,
-    uninstall: function() {
-      g.selectAll(".brush").remove();
-      brushes = {};
-      delete pc.brushExtents;
-      delete pc.brushReset;
-    },
-    selected: selected,
-    brushState: brushExtents
-  }
+		brush.selectAll("rect.background")
+				.style("fill", "transparent");
+
+		brush.selectAll("rect.extent")
+				.style("fill", "rgba(255,255,255,0.25)")
+				.style("stroke", "rgba(0,0,0,0.6)");
+
+		brush.selectAll(".resize rect")
+				.style("fill", "rgba(0,0,0,0.1)");
+
+		pc.brushExtents = brushExtents;
+		pc.brushReset = brushReset;
+		return pc;
+	};
+
+	brush.modes["1D-axes"] = {
+		install: install,
+		uninstall: function() {
+			g.selectAll(".brush").remove();
+			brushes = {};
+			delete pc.brushExtents;
+			delete pc.brushReset;
+		},
+		selected: selected,
+		brushState: brushExtents
+	}
 })();
 // brush mode: 2D-strums
 // bl.ocks.org/syntagmatic/5441022
@@ -1049,15 +1320,19 @@ pc.brushMode = function(mode) {
       .attr("class", "strum");
 
     line
-      .attr("x1", function(d) { return d.p1[0]; })
-      .attr("y1", function(d) { return d.p1[1]; })
-      .attr("x2", function(d) { return d.p2[0]; })
-      .attr("y2", function(d) { return d.p2[1]; })
+      .attr("x1", function(d) {
+        return d.p1[0]; })
+      .attr("y1", function(d) {
+        return d.p1[1]; })
+      .attr("x2", function(d) {
+        return d.p2[0]; })
+      .attr("y2", function(d) {
+        return d.p2[1]; })
       .attr("stroke", "black")
       .attr("stroke-width", 2);
 
     drag
-      .on("drag", function(d, i) {
+      .on("drag", function(d, i) { 
         var ev = d3.event;
         i = i + 1;
         strum["p" + i][0] = Math.min(Math.max(strum.minX + 1, ev.x), strum.maxX);
@@ -1089,9 +1364,9 @@ pc.brushMode = function(mode) {
 
   function dimensionsForPoint(p) {
     var dims = { i: -1, left: undefined, right: undefined };
-    __.dimensions.some(function(dim, i) {
+    d3.keys(__.dimensions).some(function(dim, i) {
       if (xscale(dim) < p[0]) {
-        var next = __.dimensions[i + 1];
+        var next = d3.keys(__.dimensions)[pc.getOrderedDimensionKeys().indexOf(dim)+1];
         dims.i = i;
         dims.left = dim;
         dims.right = next;
@@ -1103,13 +1378,13 @@ pc.brushMode = function(mode) {
     if (dims.left === undefined) {
       // Event on the left side of the first axis.
       dims.i = 0;
-      dims.left = __.dimensions[0];
-      dims.right = __.dimensions[1];
+      dims.left = pc.getOrderedDimensionKeys()[0];
+      dims.right = pc.getOrderedDimensionKeys()[1];
     } else if (dims.right === undefined) {
       // Event on the right side of the last axis
-      dims.i = __.dimensions.length - 1;
+      dims.i = d3.keys(__.dimensions).length - 1;
       dims.right = dims.left;
-      dims.left = __.dimensions[__.dimensions.length - 2];
+      dims.left = pc.getOrderedDimensionKeys()[d3.keys(__.dimensions).length - 2];
     }
 
     return dims;
@@ -1196,8 +1471,8 @@ pc.brushMode = function(mode) {
           test = containmentTest(strum, strums.width(id)),
           d1 = strum.dims.left,
           d2 = strum.dims.right,
-          y1 = yscale[d1],
-          y2 = yscale[d2],
+          y1 = __.dimensions[d1].yscale,
+          y2 = __.dimensions[d2].yscale,
           point = [y1(d[d1]) - strum.minX, y2(d[d2]) - strum.minX];
       return test(point);
     }
@@ -1286,8 +1561,8 @@ pc.brushMode = function(mode) {
 
       // Checks if the first dimension is directly left of the second dimension.
       function consecutive(first, second) {
-        var length = __.dimensions.length;
-        return __.dimensions.some(function(d, i) {
+        var length = d3.keys(__.dimensions).length;
+        return d3.keys(__.dimensions).some(function(d, i) {
           return (d === first)
             ? i + i < length && __.dimensions[i + 1] === second
             : false;
@@ -1365,7 +1640,7 @@ pc.brushMode = function(mode) {
 
   // data within extents
   function selected() {
-    var actives = __.dimensions.filter(is_brushed),
+    var actives = d3.keys(__.dimensions).filter(is_brushed),
         extents = actives.map(function(p) { return brushes[p].extent(); });
 
     // We don't want to return the full data set when there are no axes brushed.
@@ -1379,13 +1654,21 @@ pc.brushMode = function(mode) {
     // test if within range
     var within = {
       "date": function(d,p,dimension,b) {
-        return b[0] <= d[p] && d[p] <= b[1]
+        if (typeof __.dimensions[p].yscale.rangePoints === "function") { // if it is ordinal
+          return b[0] <= __.dimensions[p].yscale(d[p]) && __.dimensions[p].yscale(d[p]) <= b[1]
+        } else {
+            return b[0] <= d[p] && d[p] <= b[1]
+        }
       },
       "number": function(d,p,dimension,b) {
-        return b[0] <= d[p] && d[p] <= b[1]
+        if (typeof __.dimensions[p].yscale.rangePoints === "function") { // if it is ordinal
+          return b[0] <= __.dimensions[p].yscale(d[p]) && __.dimensions[p].yscale(d[p]) <= b[1]
+        } else {
+            return b[0] <= d[p] && d[p] <= b[1]
+        }
       },
       "string": function(d,p,dimension,b) {
-        return b[0] <= yscale[p](d[p]) && yscale[p](d[p]) <= b[1]
+        return b[0] <= __.dimensions[p].yscale(d[p]) && __.dimensions[p].yscale(d[p]) <= b[1]
       }
     };
 
@@ -1395,13 +1678,13 @@ pc.brushMode = function(mode) {
       case "AND":
         return actives.every(function(p, dimension) {
           return extents[dimension].some(function(b) {
-          	return within[__.types[p]](d,p,dimension,b);
+          	return within[__.dimensions[p].type](d,p,dimension,b);
           });
         });
       case "OR":
         return actives.some(function(p, dimension) {
       	  return extents[dimension].some(function(b) {
-            	return within[__.types[p]](d,p,dimension,b);
+            	return within[__.dimensions[p].type](d,p,dimension,b);
             });
         });
       default:
@@ -1410,24 +1693,78 @@ pc.brushMode = function(mode) {
     });
   };
 
-  function brushExtents() {
-    var extents = {};
-    __.dimensions.forEach(function(d) {
-      var brush = brushes[d];
-      if (brush !== undefined && !brush.empty()) {
-        var extent = brush.extent();
-        extents[d] = extent;
-      }
-    });
-    return extents;
+  function brushExtents(extents) {
+    if (typeof(extents) === 'undefined') {
+      extents = {};
+      d3.keys(__.dimensions).forEach(function (d) {
+        var brush = brushes[d];
+        if (brush !== undefined && !brush.empty()) {
+          var extent = brush.extent();
+          extents[d] = extent;
+        }
+      });
+      return extents;
+    }
+    else {
+      //first get all the brush selections
+      var brushSelections = {};
+      g.selectAll('.brush')
+          .each(function (d) {
+            brushSelections[d] = d3.select(this);
+          });
+
+      // loop over each dimension and update appropriately (if it was passed in through extents)
+      d3.keys(__.dimensions).forEach(function (d) {
+        if (extents[d] === undefined) {
+          return;
+        }
+
+        var brush = brushes[d];
+        if (brush !== undefined) {
+          //update the extent
+          brush.extent(extents[d]);
+
+          //redraw the brush
+          brushSelections[d]
+              .transition()
+              .duration(0)
+              .call(brush);
+
+          //fire some events
+          brush.event(brushSelections[d]);
+        }
+      });
+
+      //redraw the chart
+      pc.renderBrushed();
+
+      return pc;
+    }
   }
+
+  //function brushExtents() {
+  //  var extents = {};
+  //  d3.keys(__.dimensions).forEach(function(d) {
+  //    var brush = brushes[d];
+  //    if (brush !== undefined && !brush.empty()) {
+  //      var extent = brush.extent();
+  //      extents[d] = extent;
+  //    }
+  //  });
+  //  return extents;
+  //}
 
   function brushFor(axis) {
     var brush = d3.svg.multibrush();
 
     brush
-      .y(yscale[axis])
-      .on("brushstart", function() { d3.event.sourceEvent.stopPropagation() })
+      .y(__.dimensions[axis].yscale)
+      .on("brushstart", function() {
+				if(d3.event.sourceEvent !== null) {
+                    events.brushstart.call(pc, __.brushed);
+					d3.event.sourceEvent.stopPropagation();
+				}
+      })
       .on("brush", function() {
         brushUpdated(selected());
       })
@@ -1443,13 +1780,17 @@ pc.brushMode = function(mode) {
     	  selection
     	  .style("visibility", null)
           .attr("x", -15)
-          .attr("width", 30);
+          .attr("width", 30)
+          .style("fill", "rgba(255,255,255,0.25)")
+          .style("stroke", "rgba(0,0,0,0.6)");
       })
       .resizeAdaption(function(selection) {
     	 selection
     	   .selectAll("rect")
     	   .attr("x", -15)
-    	   .attr("width", 30);
+    	   .attr("width", 30)
+         .style("visibility", null)
+         .style("fill", "rgba(0,0,0,0.1)");
       });
 
     brushes[axis] = brush;
@@ -1474,15 +1815,26 @@ pc.brushMode = function(mode) {
     if (!g) pc.createAxes();
 
     // Add and store a brush for each axis.
-    g.append("svg:g")
+    var brush = g.append("svg:g")
       .attr("class", "brush")
       .each(function(d) {
         d3.select(this).call(brushFor(d));
       })
-      .selectAll("rect")
+
+    brush.selectAll("rect")
         .style("visibility", null)
         .attr("x", -15)
         .attr("width", 30);
+
+    brush.selectAll("rect.background")
+        .style("fill", "transparent");
+
+    brush.selectAll("rect.extent")
+        .style("fill", "rgba(255,255,255,0.25)")
+        .style("stroke", "rgba(0,0,0,0.6)");
+
+    brush.selectAll(".resize rect")
+        .style("fill", "rgba(0,0,0,0.1)");
 
     pc.brushExtents = brushExtents;
     pc.brushReset = brushReset;
@@ -1501,6 +1853,472 @@ pc.brushMode = function(mode) {
     brushState: brushExtents
   }
 })();
+// brush mode: angular
+// code based on 2D.strums.js
+
+(function() {
+  var arcs = {},
+      strumRect;
+
+  function drawStrum(arc, activePoint) {
+    var svg = pc.selection.select("svg").select("g#arcs"),
+        id = arc.dims.i,
+        points = [arc.p2, arc.p3],
+        line = svg.selectAll("line#arc-" + id).data([{p1:arc.p1,p2:arc.p2},{p1:arc.p1,p2:arc.p3}]),
+        circles = svg.selectAll("circle#arc-" + id).data(points),
+        drag = d3.behavior.drag(),
+        path = svg.selectAll("path#arc-" + id).data([arc]);
+
+    path.enter()
+      .append("path")
+      .attr("id", "arc-" + id)
+      .attr("class", "arc")
+      .style("fill", "orange")
+      .style("opacity", 0.5);
+
+    path
+      .attr("d", arc.arc)
+      .attr("transform", "translate(" + arc.p1[0] + "," + arc.p1[1] + ")");
+
+    line.enter()
+      .append("line")
+      .attr("id", "arc-" + id)
+      .attr("class", "arc");
+
+    line
+      .attr("x1", function(d) { return d.p1[0]; })
+      .attr("y1", function(d) { return d.p1[1]; })
+      .attr("x2", function(d) { return d.p2[0]; })
+      .attr("y2", function(d) { return d.p2[1]; })
+      .attr("stroke", "black")
+      .attr("stroke-width", 2);
+
+    drag
+      .on("drag", function(d, i) {
+        var ev = d3.event,
+        	angle = 0;
+
+        i = i + 2;
+
+        arc["p" + i][0] = Math.min(Math.max(arc.minX + 1, ev.x), arc.maxX);
+        arc["p" + i][1] = Math.min(Math.max(arc.minY, ev.y), arc.maxY);
+
+        angle = i === 3 ? arcs.startAngle(id) : arcs.endAngle(id);
+
+        if ((arc.startAngle < Math.PI && arc.endAngle < Math.PI && angle < Math.PI) ||
+        		(arc.startAngle >= Math.PI && arc.endAngle >= Math.PI && angle >= Math.PI)) {
+
+        	if (i === 2) {
+	        	arc.endAngle = angle;
+	        	arc.arc.endAngle(angle);
+	        } else if (i === 3) {
+	        	arc.startAngle = angle;
+	        	arc.arc.startAngle(angle);
+	        }
+
+        }
+
+        drawStrum(arc, i - 2);
+      })
+      .on("dragend", onDragEnd());
+
+    circles.enter()
+      .append("circle")
+      .attr("id", "arc-" + id)
+      .attr("class", "arc");
+
+    circles
+      .attr("cx", function(d) { return d[0]; })
+      .attr("cy", function(d) { return d[1]; })
+      .attr("r", 5)
+      .style("opacity", function(d, i) {
+        return (activePoint !== undefined && i === activePoint) ? 0.8 : 0;
+      })
+      .on("mouseover", function() {
+        d3.select(this).style("opacity", 0.8);
+      })
+      .on("mouseout", function() {
+        d3.select(this).style("opacity", 0);
+      })
+      .call(drag);
+  }
+
+  function dimensionsForPoint(p) {
+    var dims = { i: -1, left: undefined, right: undefined };
+    d3.keys(__.dimensions).some(function(dim, i) {
+      if (xscale(dim) < p[0]) {
+        var next = d3.keys(__.dimensions)[pc.getOrderedDimensionKeys().indexOf(dim)+1];
+        dims.i = i;
+        dims.left = dim;
+        dims.right = next;
+        return false;
+      }
+      return true;
+    });
+
+    if (dims.left === undefined) {
+      // Event on the left side of the first axis.
+      dims.i = 0;
+      dims.left = pc.getOrderedDimensionKeys()[0];
+      dims.right = pc.getOrderedDimensionKeys()[1];
+    } else if (dims.right === undefined) {
+      // Event on the right side of the last axis
+      dims.i = d3.keys(__.dimensions).length - 1;
+      dims.right = dims.left;
+      dims.left = pc.getOrderedDimensionKeys()[d3.keys(__.dimensions).length - 2];
+    }
+
+    return dims;
+  }
+
+  function onDragStart() {
+    // First we need to determine between which two axes the arc was started.
+    // This will determine the freedom of movement, because a arc can
+    // logically only happen between two axes, so no movement outside these axes
+    // should be allowed.
+    return function() {
+      var p = d3.mouse(strumRect[0][0]),
+          dims,
+          arc;
+
+      p[0] = p[0] - __.margin.left;
+      p[1] = p[1] - __.margin.top;
+
+      dims = dimensionsForPoint(p),
+      arc = {
+        p1: p,
+        dims: dims,
+        minX: xscale(dims.left),
+        maxX: xscale(dims.right),
+        minY: 0,
+        maxY: h(),
+        startAngle: undefined,
+        endAngle: undefined,
+        arc: d3.svg.arc().innerRadius(0)
+      };
+
+      arcs[dims.i] = arc;
+      arcs.active = dims.i;
+
+      // Make sure that the point is within the bounds
+      arc.p1[0] = Math.min(Math.max(arc.minX, p[0]), arc.maxX);
+      arc.p2 = arc.p1.slice();
+      arc.p3 = arc.p1.slice();
+    };
+  }
+
+  function onDrag() {
+    return function() {
+      var ev = d3.event,
+          arc = arcs[arcs.active];
+
+      // Make sure that the point is within the bounds
+      arc.p2[0] = Math.min(Math.max(arc.minX + 1, ev.x - __.margin.left), arc.maxX);
+      arc.p2[1] = Math.min(Math.max(arc.minY, ev.y - __.margin.top), arc.maxY);
+      arc.p3 = arc.p2.slice();
+//      console.log(arcs.angle(arcs.active));
+//      console.log(signedAngle(arcs.unsignedAngle(arcs.active)));
+      drawStrum(arc, 1);
+    };
+  }
+
+  // some helper functions
+  function hypothenuse(a, b) {
+	  return Math.sqrt(a*a + b*b);
+  }
+
+  var rad = (function() {
+	  var c = Math.PI / 180;
+	  return function(angle) {
+		  return angle * c;
+	  };
+  })();
+
+  var deg = (function() {
+	  var c = 180 / Math.PI;
+	  return function(angle) {
+		  return angle * c;
+	  };
+  })();
+
+  // [0, 2*PI] -> [-PI/2, PI/2]
+  var signedAngle = function(angle) {
+    var ret = angle;
+    if (angle > Math.PI) {
+      ret = angle - 1.5 * Math.PI;
+      ret = angle - 1.5 * Math.PI;
+    } else {
+      ret = angle - 0.5 * Math.PI;
+      ret = angle - 0.5 * Math.PI;
+    }
+    return -ret;
+  }
+
+  /**
+   * angles are stored in radians from in [0, 2*PI], where 0 in 12 o'clock.
+   * However, one can only select lines from 0 to PI, so we compute the
+   * 'signed' angle, where 0 is the horizontal line (3 o'clock), and +/- PI/2
+   * are 12 and 6 o'clock respectively.
+   */
+  function containmentTest(arc) {
+    var startAngle = signedAngle(arc.startAngle);
+    var endAngle = signedAngle(arc.endAngle);
+
+    if (startAngle > endAngle) {
+    	var tmp = startAngle;
+    	startAngle = endAngle;
+    	endAngle = tmp;
+    }
+
+    // test if segment angle is contained in angle interval
+    return function(a) {
+
+      if (a >= startAngle && a <= endAngle) {
+        return true;
+      }
+
+      return false;
+    };
+  }
+
+  function selected() {
+    var ids = Object.getOwnPropertyNames(arcs),
+        brushed = __.data;
+
+    // Get the ids of the currently active arcs.
+    ids = ids.filter(function(d) {
+      return !isNaN(d);
+    });
+
+    function crossesStrum(d, id) {
+      var arc = arcs[id],
+          test = containmentTest(arc),
+          d1 = arc.dims.left,
+          d2 = arc.dims.right,
+          y1 = __.dimensions[d1].yscale,
+          y2 = __.dimensions[d2].yscale,
+          a = arcs.width(id),
+          b = y1(d[d1]) - y2(d[d2]),
+          c = hypothenuse(a, b),
+          angle = Math.asin(b/c);	// rad in [-PI/2, PI/2]
+      return test(angle);
+    }
+
+    if (ids.length === 0) { return brushed; }
+
+    return brushed.filter(function(d) {
+      switch(brush.predicate) {
+      case "AND":
+        return ids.every(function(id) { return crossesStrum(d, id); });
+      case "OR":
+        return ids.some(function(id) { return crossesStrum(d, id); });
+      default:
+        throw "Unknown brush predicate " + __.brushPredicate;
+      }
+    });
+  }
+
+  function removeStrum() {
+    var arc = arcs[arcs.active],
+        svg = pc.selection.select("svg").select("g#arcs");
+
+    delete arcs[arcs.active];
+    arcs.active = undefined;
+    svg.selectAll("line#arc-" + arc.dims.i).remove();
+    svg.selectAll("circle#arc-" + arc.dims.i).remove();
+    svg.selectAll("path#arc-" + arc.dims.i).remove();
+  }
+
+  function onDragEnd() {
+    return function() {
+      var brushed = __.data,
+          arc = arcs[arcs.active];
+
+      // Okay, somewhat unexpected, but not totally unsurprising, a mousclick is
+      // considered a drag without move. So we have to deal with that case
+      if (arc && arc.p1[0] === arc.p2[0] && arc.p1[1] === arc.p2[1]) {
+        removeStrum(arcs);
+      }
+
+      if (arc) {
+    	  var angle = arcs.startAngle(arcs.active);
+
+    	  arc.startAngle = angle;
+          arc.endAngle = angle;
+          arc.arc
+            .outerRadius(arcs.length(arcs.active))
+            .startAngle(angle)
+            .endAngle(angle);
+      }
+
+
+      brushed = selected(arcs);
+      arcs.active = undefined;
+      __.brushed = brushed;
+      pc.renderBrushed();
+      events.brushend.call(pc, __.brushed);
+    };
+  }
+
+  function brushReset(arcs) {
+    return function() {
+      var ids = Object.getOwnPropertyNames(arcs).filter(function(d) {
+        return !isNaN(d);
+      });
+
+      ids.forEach(function(d) {
+        arcs.active = d;
+        removeStrum(arcs);
+      });
+      onDragEnd(arcs)();
+    };
+  }
+
+  function install() {
+    var drag = d3.behavior.drag();
+
+    // Map of current arcs. arcs are stored per segment of the PC. A segment,
+    // being the area between two axes. The left most area is indexed at 0.
+    arcs.active = undefined;
+    // Returns the width of the PC segment where currently a arc is being
+    // placed. NOTE: even though they are evenly spaced in our current
+    // implementation, we keep for when non-even spaced segments are supported as
+    // well.
+    arcs.width = function(id) {
+      var arc = arcs[id];
+
+      if (arc === undefined) {
+        return undefined;
+      }
+
+      return arc.maxX - arc.minX;
+    };
+
+    // returns angles in [-PI/2, PI/2]
+    angle = function(p1, p2) {
+        var a = p1[0] - p2[0],
+        	b = p1[1] - p2[1],
+        	c = hypothenuse(a, b);
+
+        return Math.asin(b/c);
+    }
+
+    // returns angles in [0, 2 * PI]
+    arcs.endAngle = function(id) {
+    	var arc = arcs[id];
+    	if (arc === undefined) {
+            return undefined;
+        }
+    	var sAngle = angle(arc.p1, arc.p2),
+    		uAngle = -sAngle + Math.PI / 2;
+
+    	if (arc.p1[0] > arc.p2[0]) {
+    		uAngle = 2 * Math.PI - uAngle;
+    	}
+
+    	return uAngle;
+    }
+
+    arcs.startAngle = function(id) {
+    	var arc = arcs[id];
+    	if (arc === undefined) {
+            return undefined;
+        }
+
+    	var sAngle = angle(arc.p1, arc.p3),
+    		uAngle = -sAngle + Math.PI / 2;
+
+    	if (arc.p1[0] > arc.p3[0]) {
+    		uAngle = 2 * Math.PI - uAngle;
+    	}
+
+    	return uAngle;
+    }
+
+    arcs.length = function(id) {
+    	var arc = arcs[id];
+
+        if (arc === undefined) {
+          return undefined;
+        }
+
+        var a = arc.p1[0] - arc.p2[0],
+        	b = arc.p1[1] - arc.p2[1],
+        	c = hypothenuse(a, b);
+
+        return(c);
+    }
+
+    pc.on("axesreorder.arcs", function() {
+      var ids = Object.getOwnPropertyNames(arcs).filter(function(d) {
+        return !isNaN(d);
+      });
+
+      // Checks if the first dimension is directly left of the second dimension.
+      function consecutive(first, second) {
+        var length = d3.keys(__.dimensions).length;
+        return d3.keys(__.dimensions).some(function(d, i) {
+          return (d === first)
+            ? i + i < length && __.dimensions[i + 1] === second
+            : false;
+        });
+      }
+
+      if (ids.length > 0) { // We have some arcs, which might need to be removed.
+        ids.forEach(function(d) {
+          var dims = arcs[d].dims;
+          arcs.active = d;
+          // If the two dimensions of the current arc are not next to each other
+          // any more, than we'll need to remove the arc. Otherwise we keep it.
+          if (!consecutive(dims.left, dims.right)) {
+            removeStrum(arcs);
+          }
+        });
+        onDragEnd(arcs)();
+      }
+    });
+
+    // Add a new svg group in which we draw the arcs.
+    pc.selection.select("svg").append("g")
+      .attr("id", "arcs")
+      .attr("transform", "translate(" + __.margin.left + "," + __.margin.top + ")");
+
+    // Install the required brushReset function
+    pc.brushReset = brushReset(arcs);
+
+    drag
+      .on("dragstart", onDragStart(arcs))
+      .on("drag", onDrag(arcs))
+      .on("dragend", onDragEnd(arcs));
+
+    // NOTE: The styling needs to be done here and not in the css. This is because
+    //       for 1D brushing, the canvas layers should not listen to
+    //       pointer-events.
+    strumRect = pc.selection.select("svg").insert("rect", "g#arcs")
+      .attr("id", "arc-events")
+      .attr("x", __.margin.left)
+      .attr("y", __.margin.top)
+      .attr("width", w())
+      .attr("height", h() + 2)
+      .style("opacity", 0)
+      .call(drag);
+  }
+
+  brush.modes["angular"] = {
+    install: install,
+    uninstall: function() {
+      pc.selection.select("svg").select("g#arcs").remove();
+      pc.selection.select("svg").select("rect#arc-events").remove();
+      pc.on("axesreorder.arcs", undefined);
+      delete pc.brushReset;
+
+      strumRect = undefined;
+    },
+    selected: selected,
+    brushState: function () { return arcs; }
+  };
+
+}());
 pc.interactive = function() {
   flags.interactive = true;
   return this;
@@ -1508,7 +2326,6 @@ pc.interactive = function() {
 
 // expose a few objects
 pc.xscale = xscale;
-pc.yscale = yscale;
 pc.ctx = ctx;
 pc.canvas = canvas;
 pc.g = function() { return g; };
@@ -1569,12 +2386,55 @@ pc.intersection =  function(a, b, c, d) {
 };
 
 function position(d) {
+  if (xscale.range().length === 0) {
+    xscale.rangePoints([0, w()], 1);
+  }
   var v = dragging[d];
   return v == null ? xscale(d) : v;
 }
-pc.version = "0.6.0";
+
+// Merges the canvases and SVG elements into one canvas element which is then passed into the callback
+// (so you can choose to save it to disk, etc.)
+pc.mergeParcoords = function(callback) {
+  // Retina display, etc.
+  var devicePixelRatio = window.devicePixelRatio || 1;
+
+  // Create a canvas element to store the merged canvases
+  var mergedCanvas = document.createElement("canvas");
+  mergedCanvas.width = pc.canvas.foreground.clientWidth * devicePixelRatio
+  mergedCanvas.height = (pc.canvas.foreground.clientHeight + 30) * devicePixelRatio;
+  mergedCanvas.style.width = mergedCanvas.width / devicePixelRatio + "px";
+  mergedCanvas.style.height = mergedCanvas.height / devicePixelRatio + "px";
+
+  // Give the canvas a white background
+  var context = mergedCanvas.getContext("2d");
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, mergedCanvas.width, mergedCanvas.height);
+
+  // Merge all the canvases
+  for (var key in pc.canvas) {
+    context.drawImage(pc.canvas[key], 0, 24 * devicePixelRatio, mergedCanvas.width, mergedCanvas.height - 30 * devicePixelRatio);
+  }
+
+  // Add SVG elements to canvas
+  var DOMURL = window.URL || window.webkitURL || window;
+  var serializer = new XMLSerializer();
+  var svgStr = serializer.serializeToString(pc.selection.select("svg")[0][0]);
+
+  // Create a Data URI.
+  var src = 'data:image/svg+xml;base64,' + window.btoa(svgStr);
+  var img = new Image();
+  img.onload = function () {
+    context.drawImage(img, 0, 0, img.width * devicePixelRatio, img.height * devicePixelRatio);
+    if (typeof callback === "function") {
+      callback(mergedCanvas);
+    }
+  };
+  img.src = src;
+}
+pc.version = "0.7.0";
   // this descriptive text should live with other introspective methods
-  pc.toString = function() { return "Parallel Coordinates: " + __.dimensions.length + " dimensions (" + d3.keys(__.data[0]).length + " total) , " + __.data.length + " rows"; };
+  pc.toString = function() { return "Parallel Coordinates: " + d3.keys(__.dimensions).length + " dimensions (" + d3.keys(__.data[0]).length + " total) , " + __.data.length + " rows"; };
 
   return pc;
 };
