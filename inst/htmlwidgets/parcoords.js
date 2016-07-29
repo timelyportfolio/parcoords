@@ -19,6 +19,7 @@ HTMLWidgets.widget({
       d3.select( el ).selectAll("*").remove();
 
       // if height or width = 0 then bail
+      //   this is important for flexdashboard and tabsets
       if(
         el.getBoundingClientRect().width === 0 ||
         el.getBoundingClientRect().height === 0
@@ -174,6 +175,9 @@ HTMLWidgets.widget({
           t.call({el:el,parcoords:parcoords,x:x});
         });
       }
+
+      return instance;
+
     };
 
     return {
@@ -193,7 +197,7 @@ HTMLWidgets.widget({
 
         instance.x = x;
 
-        draw(el, instance);
+        instance = draw(el, instance);
 
       },
 
@@ -206,7 +210,7 @@ HTMLWidgets.widget({
         //   will occur
         if(instance.x.autoresize){
 
-          draw(el, instance);
+          instance = draw(el, instance);
 
         }
 

@@ -27,8 +27,9 @@ server = function(input, output, session) {
   ###generate a data set to use
   data( diamonds, package = "ggplot2" )
   DiamondData <-   diamonds %>%
-    mutate( carat = cut(carat,breaks = c(0,1,2,3,4,5), right =F) ) %>%
+    mutate( carat = cut(carat,breaks = pretty(carat), right =F) ) %>%
     group_by( carat ) %>%
+    select(-c(cut,color,clarity)) %>%
     summarise_each(funs(mean),-carat)
 
   ###Add an ID field called "DataId" so the js can identify which column is your
