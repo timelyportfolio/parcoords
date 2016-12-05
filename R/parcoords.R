@@ -140,7 +140,7 @@ parcoords <- function(
       group = data$groupName(),
       key = data$key()
     )
-    data <- data$origData()
+    data <- data$data(withKey = TRUE)
   }
 
   # verify that data is a data.frame

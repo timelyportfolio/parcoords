@@ -59,6 +59,26 @@ HTMLWidgets.widget({
         });
       }
 
+      // separate from above Shiny handling for now,
+      //   but eventually integrate
+      var crosstalk_supported = typeof(crosstalk) !== "undefined" &&
+          typeof(x.crosstalk_opts) !== "undefined";
+
+      if(crosstalk_supported) {
+        var ct_sel = new crosstalk.SelectionHandle(x.crosstalk_opts.group);
+        parcoords.on("render", function() {
+          var ids = [];
+          if(this.brushed()){
+            ids = this.brushed().map(function(d){
+              return d.key_;
+            })
+          }
+
+          // add brushed to filter
+          ct_sel.set(ids);
+        });
+      }
+
 
       // handle dimensions;  it appears that parcoords
       //   detectDimensions does not run if custom dimensions
@@ -100,15 +120,22 @@ HTMLWidgets.widget({
       })
 
 
+      var hidden_axes = [];
       // at one point thought I should
       //   remove this because of bug with experimental dimensions
       //    and handle for now by removing rownames from the data
       // but instead I just had to move this piece to here
       if( typeof x.options.rownames == "undefined" || x.options.rownames === false ) {
         //rownames = F so hide the axis
-        parcoords.hideAxis(["names"]);
+        hidden_axes.push("names");
       }
 
+      // hide crosstalk key column
+      if(crosstalk_supported) {
+        hidden_axes.push("key_");
+      }
+
+      parcoords.hideAxis(hidden_axes);
 
       // color option will require some custom handling
       //   if color is an object with colorScale and colorBy
