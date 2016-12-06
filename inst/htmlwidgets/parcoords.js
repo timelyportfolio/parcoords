@@ -220,28 +220,35 @@ HTMLWidgets.widget({
       //   wire up crosstalk selection from outside parcoords
       if(crosstalk_supported) {
         ct_sel.on("change", function(sel){
-          var selected = ct_sel.value;
+          if(!(
+            typeof(ct_sel.value) === "undefined" ||
+            ct_sel.value === null ||
+            (Array.isArray(ct_sel.value) && ct_sel.value.length === 0)
+          )) {
+            var selected = ct_sel.value;
 
-          // handle non-array single-value
-          if(!Array.isArray(selected)) {
-            selected = [selected];
-          }
-          if(sel.sender === ct_sel){
-            // do nothing for now
-          } else {
-            // clear brushes
-            if(parcoords.brushed()){
-              var original_selection = ct_sel.value;
-              parcoords.brushReset();
-              //return selection to original selection
-              //  since brushReset will clear selection
-              //  really, really ugly hack and please revisit
-              ct_sel.set(original_selection);
+            // handle non-array single-value
+            if(!Array.isArray(selected)) {
+              selected = [selected];
             }
-            // use highlight to show the selection
-            parcoords.highlight(parcoords.data().filter(function(d,i) {
-              return selected.indexOf(d.key_) >= 0;
-            }));
+            if(sel.sender === ct_sel){
+              // do nothing for now
+            } else {
+              // clear brushes
+              if(parcoords.brushed()){
+                parcoords.brushReset();
+                //return selection to original selection
+                //  since brushReset will clear selection
+                //  really, really ugly hack and please revisit
+                ct_sel.set(selected);
+              }
+              // use highlight to show the selection
+              parcoords.highlight(parcoords.data().filter(function(d,i) {
+                return selected.indexOf(d.key_) >= 0;
+              }));
+            }
+          } else {
+            parcoords.unhighlight();
           }
         });
       }

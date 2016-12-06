@@ -10,9 +10,6 @@ pc <- parcoords(sd, brushMode="1d")
 pc
 
 # see if it syncs with itself
-#   syncing works fine but renders incorrectly
-#   at start on first two
-#   so eed to check
 tagList(pc,pc,pc) %>% browsable()
 
 # try it with plotly as a test
