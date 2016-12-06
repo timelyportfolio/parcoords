@@ -68,14 +68,27 @@ HTMLWidgets.widget({
         var ct_sel = new crosstalk.SelectionHandle(x.crosstalk_opts.group);
         parcoords.on("render", function() {
           var ids = [];
-          if(this.brushed()){
+          if(
+            this.brushed() &&
+            this.brushed().length < parcoords.data().length
+          ){
             ids = this.brushed().map(function(d){
               return d.key_;
             })
+            // add brushed to filter
+            ct_sel.set(ids);
+            this.highlight(this.brushed());
+          } else {
+            parcoords.unhighlight();
+            // seems this sets to undefined
+            //   which Plotly does not currently handle
+            //ct_sel.clear();
+            // instead set to empty array
+            // first check to make sure parcoords initiated
+            //  before clearing
+            ct_sel.set([]);
           }
 
-          // add brushed to filter
-          ct_sel.set(ids);
         });
       }
 
@@ -200,6 +213,36 @@ HTMLWidgets.widget({
         x.tasks.map(function(t){
           // for each tasks call the task with el supplied as `this`
           t.call({el:el,parcoords:parcoords,x:x});
+        });
+      }
+
+      // now that we have drawn and executed tasks
+      //   wire up crosstalk selection from outside parcoords
+      if(crosstalk_supported) {
+        ct_sel.on("change", function(sel){
+          var selected = ct_sel.value;
+
+          // handle non-array single-value
+          if(!Array.isArray(selected)) {
+            selected = [selected];
+          }
+          if(sel.sender === ct_sel){
+            // do nothing for now
+          } else {
+            // clear brushes
+            if(parcoords.brushed()){
+              var original_selection = ct_sel.value;
+              parcoords.brushReset();
+              //return selection to original selection
+              //  since brushReset will clear selection
+              //  really, really ugly hack and please revisit
+              ct_sel.set(original_selection);
+            }
+            // use highlight to show the selection
+            parcoords.highlight(parcoords.data().filter(function(d,i) {
+              return selected.indexOf(d.key_) >= 0;
+            }));
+          }
         });
       }
 
