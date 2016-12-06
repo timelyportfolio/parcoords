@@ -5,7 +5,7 @@ library(plotly)
 
 sd <- crosstalk::SharedData$new(mtcars, group="grp1")
 
-pc <- parcoords(sd, brushMode="1d")
+pc <- parcoords(sd, brushMode="1d", reorderable=TRUE)
 
 pc
 
@@ -14,8 +14,12 @@ tagList(pc,pc,pc) %>% browsable()
 
 # try it with plotly as a test
 tagList(
-  plot_ly(sd) %>%
-    add_markers(x=~hp, y=~mpg),
-  pc
+  tags$div(style="display:block;float:left;",
+    plot_ly(sd, height=400, width=400) %>%
+      add_markers(x=~hp, y=~mpg)
+  ),
+  tags$div(style="display:block;float:left;",
+    modifyList(pc,list(height=400, width=600))
+  )
 ) %>%
   browsable()

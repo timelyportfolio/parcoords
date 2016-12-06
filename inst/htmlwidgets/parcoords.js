@@ -80,13 +80,17 @@ HTMLWidgets.widget({
             this.highlight(this.brushed());
           } else {
             parcoords.unhighlight();
-            // seems this sets to undefined
-            //   which Plotly does not currently handle
-            //ct_sel.clear();
             // instead set to empty array
             // first check to make sure parcoords initiated
             //  before clearing
-            ct_sel.set([]);
+            if(typeof(parcoords.brushResetter) !== "undefined" &&
+                parcoords.brushResetter === "self"
+            ) {
+              // seems this sets to undefined
+              //   which Plotly does not currently handle
+              //ct_sel.clear();
+              ct_sel.set(null);
+            }
           }
 
         });
@@ -236,11 +240,14 @@ HTMLWidgets.widget({
             } else {
               // clear brushes
               if(parcoords.brushed()){
+                // nasty way of determining source of brush reset
+                //   need this to know whether to change
+                //   crosstalk selection or if the brush reset
+                //   is an outcome caused by something other than
+                //   this parcoords changing the selection
+                parcoords.brushResetter = "other";
                 parcoords.brushReset();
-                //return selection to original selection
-                //  since brushReset will clear selection
-                //  really, really ugly hack and please revisit
-                ct_sel.set(selected);
+                parcoords.brushResetter = "self";
               }
               // use highlight to show the selection
               parcoords.highlight(parcoords.data().filter(function(d,i) {
