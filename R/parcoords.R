@@ -134,6 +134,8 @@ parcoords <- function(
   , elementId = NULL
 ) {
 
+  crosstalk_opts <- NULL
+
   # convert data if SharedData and collect crosstalk options
   if (crosstalk::is.SharedData(data)) {
     crosstalk_opts <- list(
