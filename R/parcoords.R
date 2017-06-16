@@ -52,6 +52,7 @@
 #' @param height integer in pixels defining the height of the widget.  Autosizing to 400px
 #'          of the widget container will occur if \code{ height = NULL }.
 #' @param elementId unique \code{CSS} selector id for the widget.
+#' @param alphaOnBrushed opacity from 0 to 1 when brushed (default to 0).
 #'
 #' @return An object of class \code{htmlwidget} that will
 #' intelligently print itself into HTML in a variety of contexts
@@ -132,6 +133,7 @@ parcoords <- function(
   , width = NULL
   , height = NULL
   , elementId = NULL
+  , alphaOnBrushed = NULL
 ) {
 
   # verify that data is a data.frame
@@ -211,6 +213,7 @@ parcoords <- function(
       , dimensions = dimensions
       , width = width
       , height = height
+      , alphaOnBrushed = alphaOnBrushed
     )
     , autoresize = autoresize
     , tasks = tasks
