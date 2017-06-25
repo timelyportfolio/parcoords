@@ -18,6 +18,7 @@
 #'          giving the type of desired brush behavior for the chart.
 #' @param brushPredicate string, either \code{"and"} or \code{"or"} giving
 #'          the logic forthe join with multiple brushes.
+#' @param alphaOnBrushed opacity from 0 to 1 when brushed (default to 0).
 #' @param reorderable logical enable reordering of axes
 #' @param axisDots logical mark the points where polylines meet an axis with dots
 #' @param margin list of sizes of margins in pixels.  Currently
@@ -118,6 +119,7 @@ parcoords <- function(
   , color = NULL
   , brushMode = NULL
   , brushPredicate = "and"
+  , alphaOnBrushed = NULL
   , reorderable = F
   , axisDots = NULL
   , margin = NULL
@@ -212,6 +214,7 @@ parcoords <- function(
       , color = color
       , brushMode = brushMode
       , brushPredicate = brushPredicate
+      , alphaOnBrushed = alphaOnBrushed
       , reorderable = reorderable
       , axisDots = axisDots
       , margin = margin

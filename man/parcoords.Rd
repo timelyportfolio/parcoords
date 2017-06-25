@@ -5,10 +5,10 @@
 \title{htmlwidget for d3.js parallel-coordinates}
 \usage{
 parcoords(data = NULL, rownames = T, color = NULL, brushMode = NULL,
-  brushPredicate = "and", reorderable = F, axisDots = NULL,
-  margin = NULL, composite = NULL, alpha = NULL, queue = F, mode = F,
-  rate = NULL, dimensions = NULL, tasks = NULL, autoresize = FALSE,
-  width = NULL, height = NULL, elementId = NULL)
+  brushPredicate = "and", alphaOnBrushed = NULL, reorderable = F,
+  axisDots = NULL, margin = NULL, composite = NULL, alpha = NULL,
+  queue = F, mode = F, rate = NULL, dimensions = NULL, tasks = NULL,
+  autoresize = FALSE, width = NULL, height = NULL, elementId = NULL)
 }
 \arguments{
 \item{data}{data.frame with data to use in the chart}
@@ -30,6 +30,8 @@ giving the type of desired brush behavior for the chart.}
 
 \item{brushPredicate}{string, either \code{"and"} or \code{"or"} giving
 the logic forthe join with multiple brushes.}
+
+\item{alphaOnBrushed}{opacity from 0 to 1 when brushed (default to 0).}
 
 \item{reorderable}{logical enable reordering of axes}
 
