@@ -59,6 +59,43 @@ HTMLWidgets.widget({
         });
       }
 
+      // separate from above Shiny handling for now,
+      //   but eventually integrate
+      var crosstalk_supported = typeof(crosstalk) !== "undefined" &&
+          typeof(x.crosstalk_opts) !== "undefined";
+
+      if(crosstalk_supported) {
+        var ct_sel = new crosstalk.SelectionHandle(x.crosstalk_opts.group);
+        parcoords.on("render", function() {
+          var ids = [];
+          if(
+            this.brushed() &&
+            this.brushed().length < parcoords.data().length
+          ){
+            ids = this.brushed().map(function(d){
+              return d.key_;
+            })
+            // add brushed to filter
+            ct_sel.set(ids);
+            this.highlight(this.brushed());
+          } else {
+            parcoords.unhighlight();
+            // instead set to empty array
+            // first check to make sure parcoords initiated
+            //  before clearing
+            if(typeof(parcoords.brushResetter) !== "undefined" &&
+                parcoords.brushResetter === "self"
+            ) {
+              // seems this sets to undefined
+              //   which Plotly does not currently handle
+              //ct_sel.clear();
+              ct_sel.set(null);
+            }
+          }
+
+        });
+      }
+
 
       // handle dimensions;  it appears that parcoords
       //   detectDimensions does not run if custom dimensions
@@ -100,15 +137,22 @@ HTMLWidgets.widget({
       })
 
 
+      var hidden_axes = [];
       // at one point thought I should
       //   remove this because of bug with experimental dimensions
       //    and handle for now by removing rownames from the data
       // but instead I just had to move this piece to here
       if( typeof x.options.rownames == "undefined" || x.options.rownames === false ) {
         //rownames = F so hide the axis
-        parcoords.hideAxis(["names"]);
+        hidden_axes.push("names");
       }
 
+      // hide crosstalk key column
+      if(crosstalk_supported) {
+        hidden_axes.push("key_");
+      }
+
+      parcoords.hideAxis(hidden_axes);
 
       // color option will require some custom handling
       //   if color is an object with colorScale and colorBy
@@ -173,6 +217,46 @@ HTMLWidgets.widget({
         x.tasks.map(function(t){
           // for each tasks call the task with el supplied as `this`
           t.call({el:el,parcoords:parcoords,x:x});
+        });
+      }
+
+      // now that we have drawn and executed tasks
+      //   wire up crosstalk selection from outside parcoords
+      if(crosstalk_supported) {
+        ct_sel.on("change", function(sel){
+          if(!(
+            typeof(ct_sel.value) === "undefined" ||
+            ct_sel.value === null ||
+            (Array.isArray(ct_sel.value) && ct_sel.value.length === 0)
+          )) {
+            var selected = ct_sel.value;
+
+            // handle non-array single-value
+            if(!Array.isArray(selected)) {
+              selected = [selected];
+            }
+            if(sel.sender === ct_sel){
+              // do nothing for now
+            } else {
+              // clear brushes
+              if(parcoords.brushed()){
+                // nasty way of determining source of brush reset
+                //   need this to know whether to change
+                //   crosstalk selection or if the brush reset
+                //   is an outcome caused by something other than
+                //   this parcoords changing the selection
+                parcoords.brushResetter = "other";
+                parcoords.brushReset();
+                parcoords.brushResetter = "self";
+              }
+              // use highlight to show the selection
+              parcoords.highlight(parcoords.data().filter(function(d,i) {
+                return selected.indexOf(d.key_) >= 0;
+              }));
+            }
+          } else {
+            parcoords.unhighlight();
+          }
         });
       }
 

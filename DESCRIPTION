@@ -1,26 +1,32 @@
 Package: parcoords
 Title: htmlwidget for d3.js parallel coordinates chart
-Version: 0.4.0
-Authors@R: c( person("Mike", "Bostock", role = c("aut", "cph"), comment =
-    "d3.js library in htmlwidgets/lib, http://d3js.org"), person("Kai", "Chang"
-    ,role = c( "aut","cph" ), comment = "parallel coordinates reusable chart,
-    https://github.com/syntagmatic/parallel-coordinates"),
+Version: 0.5.0
+Date: 2017-06-25
+Authors@R: c(
+    person("Mike", "Bostock", role = c("aut", "cph"), comment =
+      "d3.js library in htmlwidgets/lib, http://d3js.org"),
+    person("Kai", "Chang",role = c( "aut","cph" ), comment = "parallel coordinates reusable chart,
+      https://github.com/syntagmatic/parallel-coordinates"),
     person("Kenton","Russell", role = c("aut","cre"), comment = "R interface",
-    email = "kent.russell@timelyportfolio.com"),
+      email = "kent.russell@timelyportfolio.com"),
     person("Mark","Albrecht",role = c("ctb"),comment = "Shiny output and example",
-    email="malbrech@nmdp.org"))
+      email="malbrech@nmdp.org")
+  )
 Maintainer: Kenton Russell <kent.russell@timelyportfolio.com>
 Description: Create interactive parallel coordinates charts with this htmlwidget
     wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}
     {parallel-coordinates}.
+URL: https://github.com/timelyportfolio/parcoords
+BugReports: https://github.com/timelyportfolio/parcoords/issues
 Depends:
-    R (>= 3.1.2)
+    R (>= 3.2.0)
 License: MIT + file LICENSE
 LazyData: true
 Imports:
+    crosstalk,
     htmlwidgets (>= 0.6.0)
 Suggests:
     knitr,
     testthat
 VignetteBuilder: knitr
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

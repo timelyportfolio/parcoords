@@ -4,7 +4,7 @@
 \alias{parcoords}
 \title{htmlwidget for d3.js parallel-coordinates}
 \usage{
-parcoords(data, rownames = T, color = NULL, brushMode = NULL,
+parcoords(data = NULL, rownames = T, color = NULL, brushMode = NULL,
   brushPredicate = "and", reorderable = F, axisDots = NULL,
   margin = NULL, composite = NULL, alpha = NULL, queue = F, mode = F,
   rate = NULL, dimensions = NULL, tasks = NULL, autoresize = FALSE,
@@ -223,4 +223,3 @@ parcoords(
   )
 )
 }
-

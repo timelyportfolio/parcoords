@@ -113,7 +113,7 @@
 #'
 #' @export
 parcoords <- function(
-  data
+  data = NULL
   , rownames = T
   , color = NULL
   , brushMode = NULL
@@ -134,12 +134,23 @@ parcoords <- function(
   , elementId = NULL
 ) {
 
+  crosstalk_opts <- NULL
+
+  # convert data if SharedData and collect crosstalk options
+  if (crosstalk::is.SharedData(data)) {
+    crosstalk_opts <- list(
+      group = data$groupName(),
+      key = data$key()
+    )
+    data <- data$data(withKey = TRUE)
+  }
+
   # verify that data is a data.frame
   if(!is.data.frame(data)) stop( "data parameter should be of type data.frame", call. = FALSE)
 
   # add rownames to data
   #  rownames = F will tell us to hide these with JavaScript
-  data = data.frame(
+  data <- data.frame(
     "names" = rownames(data)
     , data
     , stringsAsFactors = FALSE
@@ -194,7 +205,7 @@ parcoords <- function(
   }
 
   # forward options using x
-  x = list(
+  x <- list(
     data = data,
     options = list(
       rownames = rownames
@@ -220,7 +231,7 @@ parcoords <- function(
   x$options = Filter( Negate(is.null), x$options )
 
   # create widget
-  htmlwidgets::createWidget(
+  pc <- htmlwidgets::createWidget(
     name = 'parcoords',
     x,
     width = width,
@@ -228,6 +239,14 @@ parcoords <- function(
     package = 'parcoords',
     elementId = elementId
   )
+
+  #  add crosstalk options and dependencies
+  if(!is.null(crosstalk_opts)) {
+    pc$x$crosstalk_opts <- crosstalk_opts
+    pc$dependencies <- crosstalk::crosstalkLibs()
+  }
+
+  pc
 }
 
 
