@@ -35,6 +35,7 @@
 #' @param rate integer rate at which render will queue; see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_rate}{}
 #'          for a full discussion and some recommendations
 #' @param dimensions \code{list} to customize axes dimensions.
+#' @param dimensionTitleRotation \code{integer} amount by which to rotate the dimension titles
 #' @param tasks a character string or \code{\link[htmlwidgets]{JS}} or list of
 #'          strings or \code{JS} representing a JavaScript function(s) to run
 #'          after the \code{parcoords} has rendered.  These provide an opportunity
@@ -129,6 +130,7 @@ parcoords <- function(
   , mode = F
   , rate = NULL
   , dimensions = NULL
+  , dimensionTitleRotation = 0
   , tasks = NULL
   , autoresize = FALSE
   , width = NULL
@@ -206,6 +208,9 @@ parcoords <- function(
     )
   }
 
+  # always rotate in the same direction
+  dimensionTitleRotation <- -abs(dimensionTitleRotation)
+
   # forward options using x
   x <- list(
     data = data,
@@ -223,6 +228,7 @@ parcoords <- function(
       , mode = mode
       , rate = rate
       , dimensions = dimensions
+      , dimensionTitleRotation = dimensionTitleRotation
       , width = width
       , height = height
     )

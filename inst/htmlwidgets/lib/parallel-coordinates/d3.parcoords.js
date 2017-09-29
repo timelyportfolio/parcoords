@@ -752,7 +752,7 @@ pc.createAxes = function() {
       })
     .append("svg:text")
       .attr({
-        "text-anchor": "middle",
+        "text-anchor": (__.dimensionTitleRotation !== 0 ? "right" : "middle"),
         "y": 0,
         "transform": "translate(0,-5) rotate(" + __.dimensionTitleRotation + ")",
         "x": 0,

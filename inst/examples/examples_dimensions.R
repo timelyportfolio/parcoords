@@ -80,4 +80,5 @@ parcoords(
       tickValues = unique(mtcars$cyl)
     )
   )
+  ,dimensionTitleRotation = 30
 )

@@ -7,8 +7,9 @@
 parcoords(data = NULL, rownames = T, color = NULL, brushMode = NULL,
   brushPredicate = "and", alphaOnBrushed = NULL, reorderable = F,
   axisDots = NULL, margin = NULL, composite = NULL, alpha = NULL,
-  queue = F, mode = F, rate = NULL, dimensions = NULL, tasks = NULL,
-  autoresize = FALSE, width = NULL, height = NULL, elementId = NULL)
+  queue = F, mode = F, rate = NULL, dimensions = NULL,
+  dimensionTitleRotation = 0, tasks = NULL, autoresize = FALSE,
+  width = NULL, height = NULL, elementId = NULL)
 }
 \arguments{
 \item{data}{data.frame with data to use in the chart}
@@ -57,6 +58,8 @@ progressive rendering.  Usually \code{ queue = T } for very large datasets.}
 for a full discussion and some recommendations}
 
 \item{dimensions}{\code{list} to customize axes dimensions.}
+
+\item{dimensionTitleRotation}{\code{integer} amount by which to rotate the dimension titles}
 
 \item{tasks}{a character string or \code{\link[htmlwidgets]{JS}} or list of
 strings or \code{JS} representing a JavaScript function(s) to run
@@ -223,5 +226,6 @@ parcoords(
       tickValues = unique(mtcars$cyl)
     )
   )
+  ,dimensionTitleRotation = 30
 )
 }
