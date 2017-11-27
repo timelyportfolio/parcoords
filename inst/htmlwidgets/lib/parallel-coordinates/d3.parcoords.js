@@ -726,7 +726,7 @@ function flipAxisAndUpdatePCP(dimension) {
 
 function rotateLabels() {
   if (!__.rotateLabels) return;
-  
+
   var delta = d3.event.deltaY;
   delta = delta < 0 ? -5 : delta;
   delta = delta > 0 ? 5 : delta;
@@ -1056,9 +1056,9 @@ var brush = {
 //
 // @param newSelection - The new set of data items that is currently contained
 //                       by the brushes
-function brushUpdated(newSelection) {
+function brushUpdated(newSelection, brush_el) {
   __.brushed = newSelection;
-  events.brush.call(pc,__.brushed);
+  events.brush.call(pc,__.brushed, brush_el);
   pc.renderBrushed();
 }
 
@@ -1233,15 +1233,15 @@ pc.brushMode = function(mode) {
       .y(__.dimensions[axis].yscale)
       .on("brushstart", function() {
 				if(d3.event.sourceEvent !== null) {
-					events.brushstart.call(pc, __.brushed);
+					events.brushstart.call(pc, __.brushed, this);
 					d3.event.sourceEvent.stopPropagation();
 				}
 			})
 			.on("brush", function() {
-				brushUpdated(selected());
+				brushUpdated(selected(), this);
 			})
 			.on("brushend", function() {
-				events.brushend.call(pc, __.brushed);
+				events.brushend.call(pc, __.brushed, this);
 			});
 
 		brushes[axis] = brush;
@@ -1354,7 +1354,7 @@ pc.brushMode = function(mode) {
       .attr("stroke-width", 2);
 
     drag
-      .on("drag", function(d, i) { 
+      .on("drag", function(d, i) {
         var ev = d3.event;
         i = i + 1;
         strum["p" + i][0] = Math.min(Math.max(strum.minX + 1, ev.x), strum.maxX);
