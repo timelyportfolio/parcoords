@@ -137,7 +137,7 @@ HTMLWidgets.widget({
       })
 
 
-      var hidden_axes = [];
+      var hidden_axes = parcoords.hideAxis() || [];
       // at one point thought I should
       //   remove this because of bug with experimental dimensions
       //    and handle for now by removing rownames from the data
