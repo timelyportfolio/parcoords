@@ -25,7 +25,7 @@ d3.parcoords = function(config) {
     flipAxes: [],
     animationTime: 1100, // How long it takes to flip the axis when you double click
     rotateLabels: false,
-    outsideFilters: []
+    outsideFilters: null
   };
 
   extend(__, config);
@@ -1061,8 +1061,8 @@ function brushUpdated(newSelection, brush_el) {
   // if outside filters set then apply these outside filters
   if(__.outsideFilters) {
     newSelection = newSelection.filter(function(d) {
-      return __.outsideFilters.every(function(filter) {
-        return filter.values.indexOf(d[filter.dimension]) > -1
+      return d3.keys(__.outsideFilters).every(function(dim, i) {
+        return __.outsideFilters[dim].indexOf(d[dim]) > -1
       })
     })
   }
