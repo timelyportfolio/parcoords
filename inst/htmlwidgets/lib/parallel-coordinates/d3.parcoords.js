@@ -1062,6 +1062,10 @@ function brushUpdated(newSelection, brush_el) {
   pc.renderBrushed();
 }
 
+// add brushUpdated to our parcoods
+//   to make it accessible from outside
+pc.brushUpdated = brushUpdated
+
 function brushPredicate(predicate) {
   if (!arguments.length) { return brush.predicate; }
 
@@ -1280,6 +1284,10 @@ pc.brushMode = function(mode) {
 	};
 
 	function install() {
+    // also make selected() function available outside
+    //   of parcoords for other non-brush filters
+    pc.selected = selected;
+
 		if (!g) pc.createAxes();
 
 		// Add and store a brush for each axis.
