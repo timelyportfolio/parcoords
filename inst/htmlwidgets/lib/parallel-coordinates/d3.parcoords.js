@@ -1248,15 +1248,15 @@ pc.brushMode = function(mode) {
       .y(__.dimensions[axis].yscale)
       .on("brushstart", function() {
 				if(d3.event.sourceEvent !== null) {
-					events.brushstart.call(pc, __.brushed);
+					events.brushstart.call(pc, __.brushed, this);
 					d3.event.sourceEvent.stopPropagation();
 				}
 			})
 			.on("brush", function() {
-				brushUpdated(selected());
+				brushUpdated(selected(), this);
 			})
 			.on("brushend", function() {
-				events.brushend.call(pc, __.brushed);
+				events.brushend.call(pc, __.brushed, this);
 			});
 
 		brushes[axis] = brush;
@@ -1295,6 +1295,10 @@ pc.brushMode = function(mode) {
 	};
 
 	function install() {
+    // also make selected() function available outside		
+    //   of parcoords for other non-brush filters		
+    pc.selected = selected;
+
 		if (!g) pc.createAxes();
 
 		// Add and store a brush for each axis.
