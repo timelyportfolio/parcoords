@@ -727,7 +727,7 @@ function flipAxisAndUpdatePCP(dimension) {
 
 function rotateLabels() {
   if (!__.rotateLabels) return;
-
+  
   var delta = d3.event.deltaY;
   delta = delta < 0 ? -5 : delta;
   delta = delta > 0 ? 5 : delta;
@@ -1066,13 +1066,13 @@ function brushUpdated(newSelection, brush_el) {
       })
     })
   }
-
+  
   __.brushed = newSelection;
-
   events.brush.call(pc,__.brushed, brush_el);
   pc.renderBrushed();
 }
 
+        
 // add brushUpdated to our parcoods
 //   to make it accessible from outside
 pc.brushUpdated = brushUpdated
@@ -1248,15 +1248,15 @@ pc.brushMode = function(mode) {
       .y(__.dimensions[axis].yscale)
       .on("brushstart", function() {
 				if(d3.event.sourceEvent !== null) {
-					events.brushstart.call(pc, __.brushed, this);
+					events.brushstart.call(pc, __.brushed);
 					d3.event.sourceEvent.stopPropagation();
 				}
 			})
 			.on("brush", function() {
-				brushUpdated(selected(), this);
+				brushUpdated(selected());
 			})
 			.on("brushend", function() {
-				events.brushend.call(pc, __.brushed, this);
+				events.brushend.call(pc, __.brushed);
 			});
 
 		brushes[axis] = brush;
@@ -1295,10 +1295,6 @@ pc.brushMode = function(mode) {
 	};
 
 	function install() {
-    // also make selected() function available outside
-    //   of parcoords for other non-brush filters
-    pc.selected = selected;
-
 		if (!g) pc.createAxes();
 
 		// Add and store a brush for each axis.
@@ -1373,7 +1369,7 @@ pc.brushMode = function(mode) {
       .attr("stroke-width", 2);
 
     drag
-      .on("drag", function(d, i) {
+      .on("drag", function(d, i) { 
         var ev = d3.event;
         i = i + 1;
         strum["p" + i][0] = Math.min(Math.max(strum.minX + 1, ev.x), strum.maxX);
