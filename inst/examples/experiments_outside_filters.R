@@ -115,3 +115,55 @@ function(el, x) {
 }
 "
 )
+
+
+
+
+
+# try with diamonds to get 4,000 rows
+# get a parcoords that we can hack later
+pc <- parcoords(
+  diamonds[sample(seq_len(nrow(diamonds)),4000), c("price","clarity", "color", "cut")],
+  brushMode = "1d",
+  queue = TRUE,
+  height = 400
+)
+
+browsable(
+  tagList(
+    tags$select(
+      name = "cut",
+      id = "select-cut",
+      multiple = "true",
+      lapply(
+        levels(diamonds$cut),
+        tags$option
+      )
+    ),
+    pc,
+    tags$script(HTML(
+"
+d3.select('#select-cut').on('change', function() {
+  var pc = HTMLWidgets.find('.parcoords').instance.parcoords
+  var selected = []
+  d3.select(this).selectAll('option:checked').each(function(d){
+    selected.push(this.value)
+  })
+
+  var filters = pc.outsideFilters() || {}
+
+  if(selected.length > 0) {
+    filters.cut = selected
+    pc.outsideFilters(filters)
+  } else {
+    delete filters.cut
+    pc.outsideFilters(filters)
+  }
+
+  // now update
+  pc.brushUpdated(pc.selected())
+})
+"
+    ))
+  )
+)
