@@ -22,8 +22,9 @@ to hide it.}
 \item{color}{see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_color}{parcoords.color( color )}.
 Color can be a single color as rgb or hex.  For a color function,
 provide a list( colorScale = , colorBy = ) where colorScale is
-a function such as \code{d3.scale.category10()} and colorBy
-is the column name from the data to determine color.}
+a function such as \code{d3.scaleOrdinal(d3.schemeCategory10)} and colorBy
+is the column name from the data to determine color.  If using a \code{d3}
+color scale, then make sure to use the argument \code{withD3 = TRUE}.}
 
 \item{brushMode}{string, either \code{"1D-axes"}, \code{"1D-axes-multi"},
 or \code{"2D-strums"}
@@ -113,8 +114,9 @@ wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}{para
     mtcars
     , color = list(
        colorBy="cyl"
-       ,colorScale=htmlwidgets::JS('d3.scale.category10()')
+       ,colorScale=htmlwidgets::JS('d3.scaleOrdinal(d3.schemeCategory10)')
     )
+    , withD3 = TRUE
   )
   ### be careful; this might strain your system #######
   ###                                           #######
@@ -127,8 +129,9 @@ wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}{para
     ,queue = T
     ,color= list(
        colorBy="cut"
-       ,colorScale = htmlwidgets::JS("d3.scale.category10()")
-     )
+       ,colorScale = htmlwidgets::JS("d3.scaleOrdinal(d3.schemeCategory10)")
+    )
+    ,withD3 = TRUE
   )
   # or if we want to add in a dplyr chain
   library(dplyr)
@@ -137,14 +140,15 @@ wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}{para
      mutate( carat = cut(carat,breaks = pretty(carat), right =F) ) \%>\%
      group_by( carat ) \%>\%
      select(-c(cut,color,clarity)) \%>\%
-     summarise_each(funs(mean),-carat) \%>\%
+     summarise_all(funs(mean),-carat) \%>\%
      parcoords(
         rownames= F
         ,color = list(
-           colorScale = htmlwidgets::JS('d3.scale.category10()' )
+           colorScale = htmlwidgets::JS('d3.scaleOrdinal(d3.schemeSet3)' )
           , colorBy = "carat"
         )
         ,brushMode = "1D"
+        ,withD3 = TRUE
       )
 }
 library(parcoords)

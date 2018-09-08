@@ -2,36 +2,6 @@ import '@babel/polyfill';
 import {select} from 'd3-selection';
 import ParCoords from 'parcoord-es';
 
-if (typeof Object.assign != 'function') {
-  // Must be writable: true, enumerable: false, configurable: true
-  Object.defineProperty(Object, "assign", {
-    value: function assign(target, varArgs) { // .length of function is 2
-      'use strict';
-      if (target == null) { // TypeError if undefined or null
-        throw new TypeError('Cannot convert undefined or null to object');
-      }
-
-      var to = Object(target);
-
-      for (var index = 1; index < arguments.length; index++) {
-        var nextSource = arguments[index];
-
-        if (nextSource != null) { // Skip over if undefined or null
-          for (var nextKey in nextSource) {
-            // Avoid bugs when hasOwnProperty is shadowed
-            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-              to[nextKey] = nextSource[nextKey];
-            }
-          }
-        }
-      }
-      return to;
-    },
-    writable: true,
-    configurable: true
-  });
-}
-
 var HTMLWidgets = window.HTMLWidgets;
 
 HTMLWidgets.widget({
@@ -199,10 +169,10 @@ HTMLWidgets.widget({
       if ( typeof x.options.color !== "undefined" ) {
         var color;
         if( x.options.color.constructor.name === "Object" ) {
-          colorScale = x.options.color.colorScale  ? x.options.color.colorScale : d3.scale.category20b();
+          var colorScale = x.options.color.colorScale  ? x.options.color.colorScale : d3.scaleOrdinal(d3.schemeCategory20);
           var colors = {};
-          d3.keys(d3.nest().key(function(d){return d[x.options.color.colorBy]}).map(x.data)).map(function(c){
-            colors[c] = colorScale(c);
+          d3.nest().key(function(d){return d[x.options.color.colorBy]}).entries(x.data).map(function(c){
+            colors[c.key] = colorScale(c.key);
           })
 
           color = function(d) {
