@@ -2,5 +2,5 @@ dependencies:
   - name: "parallel-coordinates"
     version: 2.1.8
     src: "htmlwidgets/lib/parallel-coordinates"
-    script: parcoords-es.js
+#    script: parcoords-es.js
     stylesheet: parcoords.css
