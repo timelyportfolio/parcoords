@@ -48,6 +48,10 @@
 #'          in contexts such as rmarkdown slide presentations or
 #'          flexdashboard.  However, this will not be useful if you
 #'          expect bigger data or a more typical html context.
+#' @param withD3 \code{logical} to include d3 dependency from \code{d3r}. The 'parcoords'
+#'          htmlwidget uses a standalone JavaScript build and will
+#'          not include the entire d3 in the global/window namespace.  To include
+#'          d3.js in this way, use \code{withD3=TRUE}.
 #' @param width integer in pixels defining the width of the widget.  Autosizing  to 100%
 #'          of the widget container will occur if \code{ width = NULL }.
 #' @param height integer in pixels defining the height of the widget.  Autosizing to 400px
@@ -131,6 +135,7 @@ parcoords <- function(
   , dimensions = NULL
   , tasks = NULL
   , autoresize = FALSE
+  , withD3 = FALSE
   , width = NULL
   , height = NULL
   , elementId = NULL
@@ -233,6 +238,13 @@ parcoords <- function(
   # remove NULL options
   x$options = Filter( Negate(is.null), x$options )
 
+  # include d3 if withD3 is TRUE
+  dep <- NULL
+  if(withD3 == TRUE) {
+    dep <- d3r::d3_dep_v5()
+  }
+
+
   # create widget
   pc <- htmlwidgets::createWidget(
     name = 'parcoords',
@@ -240,6 +252,7 @@ parcoords <- function(
     width = width,
     height = height,
     package = 'parcoords',
+    dependencies = dep,
     elementId = elementId
   )
 

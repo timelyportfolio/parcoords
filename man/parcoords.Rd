@@ -8,7 +8,8 @@ parcoords(data = NULL, rownames = T, color = NULL, brushMode = NULL,
   brushPredicate = "and", alphaOnBrushed = NULL, reorderable = F,
   axisDots = NULL, margin = NULL, composite = NULL, alpha = NULL,
   queue = F, mode = F, rate = NULL, dimensions = NULL, tasks = NULL,
-  autoresize = FALSE, width = NULL, height = NULL, elementId = NULL)
+  autoresize = FALSE, withD3 = FALSE, width = NULL, height = NULL,
+  elementId = NULL)
 }
 \arguments{
 \item{data}{data.frame with data to use in the chart}
@@ -72,6 +73,11 @@ when the size of the container changes.  This is useful
 in contexts such as rmarkdown slide presentations or
 flexdashboard.  However, this will not be useful if you
 expect bigger data or a more typical html context.}
+
+\item{withD3}{\code{logical} to include d3 dependency from \code{d3r}. The 'parcoords'
+htmlwidget uses a standalone JavaScript build and will
+not include the entire d3 in the global/window namespace.  To include
+d3.js in this way, use \code{withD3=TRUE}.}
 
 \item{width}{integer in pixels defining the width of the widget.  Autosizing  to 100%
 of the widget container will occur if \code{ width = NULL }.}
