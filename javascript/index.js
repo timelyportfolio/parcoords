@@ -1,8 +1,12 @@
 import '@babel/polyfill';
 import {select} from 'd3-selection';
 import ParCoords from 'parcoord-es';
+import methods from './src/methods';
 
 var HTMLWidgets = window.HTMLWidgets;
+// don't like adding in global/window so adding to HTMLWidgets instead
+//   try to think of a better way of accomplishing this at some point in the future 
+window.HTMLWidgets.parcoordsWidget = {methods: methods};
 
 HTMLWidgets.widget({
 
@@ -20,7 +24,7 @@ HTMLWidgets.widget({
 
       //ugly but currently have to clear out
       //  each time to get proper render
-      // delete all children of el
+      // devare all children of el
       //  possibly revisit to see if we should be a little more delicate
       select( el ).selectAll("*").remove();
 
@@ -207,12 +211,12 @@ HTMLWidgets.widget({
         select("#" + el.id + " .dimension .axis > text").remove();
       }
 
-      // sloppy but for now let's force text smaller
+      // sloppy but for now var's force text smaller
       //   ?? how best to provide parameter in R
       select("#" + el.id).selectAll("svg text")
           .style("font-size","10px");
 
-      // set up a container for tasks to perform after completion
+      // set up a container for tasks to perform after compvarion
       //  one example would be add callbacks for event handling
       //  styling
       if (!(typeof x.tasks === "undefined" || x.tasks === null) ){
@@ -313,3 +317,34 @@ HTMLWidgets.widget({
     };
   }
 });
+
+// receive and handle parcoords proxy messages with Shiny
+if (HTMLWidgets.shinyMode) {
+  Shiny.addCustomMessageHandler("parcoords-calls", function(data) {
+    var id = data.id;
+    var el = document.getElementById(id);
+    var pcw = el ? HTMLWidgets.find("#" + id) : null;
+    var methods = HTMLWidgets.parcoordsWidget.methods;
+
+    if (!pcw) {
+      console.log("Couldn't find parcoords with id " + id);
+      return;
+    }
+
+    var pc = pcw.instance.parcoords;
+    if(!pc) {
+      console.log("Founds parcoords with " + id + " but no parcoords attached");
+    }
+
+    for (var i = 0; i < data.calls.length; i++) {
+      var call = data.calls[i];
+      if (call.dependencies) {
+        Shiny.renderDependencies(call.dependencies);
+      }
+      if (methods[call.method])
+        methods[call.method].apply(pc, call.args);
+      else
+        console.log("Unknown method " + call.method);
+    }
+  });
+}

@@ -29,7 +29,7 @@
   "dependencies": {
     "@babel/polyfill": "^7.0.0",
     "d3-selection": "^1.1.0",
-    "parcoord-es": "^2.1.8"
+    "parcoord-es": "file:../../parcoords-es"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",

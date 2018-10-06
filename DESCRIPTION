@@ -1,7 +1,7 @@
 Package: parcoords
 Title: htmlwidget for d3.js parallel coordinates chart
-Version: 0.5.0
-Date: 2017-06-25
+Version: 0.6.0
+Date: 2018-09-08
 Authors@R: c(
     person("Mike", "Bostock", role = c("aut", "cph"), comment =
       "d3.js library in htmlwidgets/lib, http://d3js.org"),

@@ -2,5 +2,7 @@
 
 export(parcoords)
 export(parcoordsOutput)
+export(parcoordsProxy)
+export(pcFilter)
 export(renderParcoords)
 import(htmlwidgets)
