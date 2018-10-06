@@ -658,7 +658,7 @@ if(crosstalk_supported){hidden_axes.push("key_");}parcoords.hideAxis(hidden_axes
 //   if color is an object with colorScale and colorBy
 //    will need to iterate through each of the unique group values
 //    and assign a color
-if(typeof x.options.color!=="undefined"){var color;if(x.options.color.constructor.name==="Object"){var colorScaleType=x.options.color.colorScale?x.options.color.colorScale:"scaleOrdinal";var colorScaleScheme=x.options.color.colorScheme?x.option.color.colorScheme:"schemeCategory10";var colorScale;// in the case of scaleSequential we will also look for an interpolator
+if(typeof x.options.color!=="undefined"){var color;if(x.options.color.constructor.name==="Object"){var colorScaleType=x.options.color.colorScale?x.options.color.colorScale:"scaleOrdinal";var colorScaleScheme=x.options.color.colorScheme?x.options.color.colorScheme:"schemeCategory10";var colorScale;// in the case of scaleSequential we will also look for an interpolator
 var colorScaleInterpolator=x.options.color.colorInterpolator?x.options.color.colorInterpolator:"interpolateViridis";if(colorScaleType==="scaleSequential"){colorScale=d3[colorScaleType](d3[colorScaleInterpolator]);// now figure out range/extent of variable for colorDomain
 colorScale.domain(d3.extent(x.data,function(d){return d[x.options.color.colorBy];}));}else{colorScale=d3[colorScaleType](d3[colorScaleScheme]);}window.cs=colorScale;console.log(cs.domain());color=function(d){return colorScale(d[x.options.color.colorBy]);};}else{//   color can be a single value in which all lines will be same color
 //    for this we do not need to do anything

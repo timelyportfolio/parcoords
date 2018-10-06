@@ -174,7 +174,7 @@ HTMLWidgets.widget({
         var color;
         if( x.options.color.constructor.name === "Object" ) {
           var colorScaleType = x.options.color.colorScale  ? x.options.color.colorScale : "scaleOrdinal";
-          var colorScaleScheme = x.options.color.colorScheme ? x.option.color.colorScheme: "schemeCategory10";
+          var colorScaleScheme = x.options.color.colorScheme ? x.options.color.colorScheme: "schemeCategory10";
           var colorScale;
           // in the case of scaleSequential we will also look for an interpolator
           var colorScaleInterpolator = x.options.color.colorInterpolator  ? x.options.color.colorInterpolator : "interpolateViridis";
