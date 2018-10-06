@@ -4,5 +4,5 @@
 
 * add proxy and methods for control and use of a `parcoords` htmlwidget from Shiny
 
-
+* rework color argument completely to allow for coloring by a continuous variable and provide more flexibility for future use.  Now we can also eliminate `htmlwidgets::JS` from the argument so that the R user does not need to write JavaScript functions.
 
