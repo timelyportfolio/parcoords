@@ -621,7 +621,9 @@ window.HTMLWidgets.parcoordsWidget={methods:methods};HTMLWidgets.widget({name:'p
 d3Selection.select(el).selectAll("*").remove();// if height or width = 0 then bail
 //   this is important for flexdashboard and tabsets
 if(el.getBoundingClientRect().width===0||el.getBoundingClientRect().height===0){return;}// create our parallel coordinates
-var parcoords=ParCoords()("#"+el.id).data(x.data).width(width).height(height);// use expando to attach parcoords to the element
+var parcoords=ParCoords()("#"+el.id).data(x.data).width(width).height(height);// add function to center parcoords horizontally by dimension/column
+//   potentially explore adding this to parcoords-es through pull request
+var center=function(dim){var pc=this;var pcel=pc.svg.node().parentNode.parentNode;var xp=pc.xscale(dim);var ws=document.body.getBoundingClientRect().width;if(xp){pcel.scrollTo(xp-ws/2+pc.margin().left+pcel.getBoundingClientRect().left,0);}};parcoords.center=center.bind(parcoords);// use expando to attach parcoords to the element
 //  this duplicates the step below
 //  but might make it easier for a user
 //  to manipulate the parcoords

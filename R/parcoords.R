@@ -296,3 +296,12 @@ renderParcoords <- function(expr, env = parent.frame(), quoted = FALSE) {
   if (!quoted) { expr <- substitute(expr) } # force quoted
   shinyRenderWidget(expr, parcoordsOutput, env, quoted = TRUE)
 }
+
+# custom function html so that we can contain width of the parcoords chart
+parcoords_html <- function(name, package, id, style, class, ...) {
+  htmltools::tags$div(
+    id = id, style = style,
+    style = "position:relative; overflow-x:auto; overflow-y:hidden; max-width:100%;",
+    class = class, ...
+  )
+}

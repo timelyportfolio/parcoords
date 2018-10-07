@@ -43,6 +43,24 @@ HTMLWidgets.widget({
         .width( width )
         .height( height );
 
+      // add function to center parcoords horizontally by dimension/column
+      //   potentially explore adding this to parcoords-es through pull request
+      var center = function(dim) {
+        var pc = this;
+        var pcel = pc.svg.node().parentNode.parentNode;
+        var xp = pc.xscale(dim);
+        var ws = document.body.getBoundingClientRect().width;
+
+        if(xp) {
+          pcel.scrollTo(
+            xp - ws/2 + pc.margin().left + pcel.getBoundingClientRect().left,
+            0
+          );
+        }
+      }
+
+      parcoords.center = center.bind(parcoords);
+
       // use expando to attach parcoords to the element
       //  this duplicates the step below
       //  but might make it easier for a user
