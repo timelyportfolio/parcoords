@@ -34,7 +34,7 @@ test_that("options",{
   )
   #   if single numeric then apply param to all sides
   expect_identical(
-    parcoords(data.frame(),margin=0)$x$options$margin
+    suppressWarnings(parcoords(data.frame(),margin=0)$x$options$margin)
     ,list( top = 0, bottom = 0, left=0, right = 0)
   )
   expect_identical(
@@ -54,4 +54,11 @@ test_that("options",{
   # check that rate gets transmitted
   expect_null( parcoords(data.frame() )$x$options$rate )
   expect_equal( parcoords(data.frame(), rate = 200)$x$options$rate, 200)
+
+  # check bundling
+  expect_warning( parcoords(head(mtcars), bundleDimension = "z") )
+  expect_identical( suppressWarnings(parcoords(head(mtcars), bundleDimension = "z"))$x$options$bundleDimension, NULL )
+  expect_warning( parcoords(data.frame(), smoothness=0.4) )
+  expect_identical( suppressWarnings(parcoords(head(mtcars), smoothness=0.5))$x$options$smoothness, 0 )
+  expect_match( parcoords(head(mtcars), bundleDimension = "cyl")$dependencies[[1]]$name, "sylvester" )
 })

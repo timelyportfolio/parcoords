@@ -7,9 +7,10 @@
 parcoords(data = NULL, rownames = T, color = NULL, brushMode = NULL,
   brushPredicate = "and", alphaOnBrushed = NULL, reorderable = F,
   axisDots = NULL, margin = NULL, composite = NULL, alpha = NULL,
-  queue = F, mode = F, rate = NULL, dimensions = NULL, tasks = NULL,
-  autoresize = FALSE, withD3 = FALSE, width = NULL, height = NULL,
-  elementId = NULL)
+  queue = F, mode = F, rate = NULL, dimensions = NULL,
+  bundleDimension = NULL, bundlingStrength = 0.5, smoothness = 0,
+  tasks = NULL, autoresize = FALSE, withD3 = FALSE, width = NULL,
+  height = NULL, elementId = NULL)
 }
 \arguments{
 \item{data}{data.frame with data to use in the chart}
@@ -24,7 +25,7 @@ Color can be a single color as rgb or hex.  For a color function,
 provide a
 \code{list( colorScale = , colorBy = , colorSheme =, colorInterpolator = , colorDomain =)}
 where colorScale is the name of the
-\href{https://github.com/d3/d3-scale/blob/master/README.md#sequential-scales}{d3-scale} suc as
+\href{https://github.com/d3/d3-scale/blob/master/README.md#sequential-scales}{d3-scale} such as
 \code{scaleOrdinal} or \code{scaleSequential},
 colorBy with the column name from the data to determine color.  If appplying color to a
 discrete or ordinal variable then please also supply colorScheme, such as
@@ -67,6 +68,14 @@ progressive rendering.  Usually \code{ queue = T } for very large datasets.}
 for a full discussion and some recommendations}
 
 \item{dimensions}{\code{list} to customize axes dimensions.}
+
+\item{bundleDimension}{character string for the column or variable on which to bundle}
+
+\item{bundlingStrength}{numeric value between 0 and 1 for the strength of the bundling.  This value will
+not affect the parallel coordinates if \code{bundleDimension} is not set and will be ignored.}
+
+\item{smoothness}{numeric value between between 0 and 1 for stength of smoothing or curvature.    This value will
+not affect the parallel coordinates if \code{bundleDimension} is not set and will be ignored.}
 
 \item{tasks}{a character string or \code{\link[htmlwidgets]{JS}} or list of
 strings or \code{JS} representing a JavaScript function(s) to run

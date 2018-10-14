@@ -44,6 +44,11 @@
 #' @param rate integer rate at which render will queue; see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_rate}{}
 #'          for a full discussion and some recommendations
 #' @param dimensions \code{list} to customize axes dimensions.
+#' @param bundleDimension character string for the column or variable on which to bundle
+#' @param bundlingStrength numeric value between 0 and 1 for the strength of the bundling.  This value will
+#'          not affect the parallel coordinates if \code{bundleDimension} is not set and will be ignored.
+#' @param smoothness numeric value between between 0 and 1 for stength of smoothing or curvature.    This value will
+#'          not affect the parallel coordinates if \code{bundleDimension} is not set and will be ignored.
 #' @param tasks a character string or \code{\link[htmlwidgets]{JS}} or list of
 #'          strings or \code{JS} representing a JavaScript function(s) to run
 #'          after the \code{parcoords} has rendered.  These provide an opportunity
@@ -145,6 +150,9 @@ parcoords <- function(
   , mode = F
   , rate = NULL
   , dimensions = NULL
+  , bundleDimension = NULL
+  , bundlingStrength = 0.5
+  , smoothness = 0
   , tasks = NULL
   , autoresize = FALSE
   , withD3 = FALSE
@@ -212,6 +220,26 @@ parcoords <- function(
   # queue=T needs to be converted to render = "queue"
   if (!is.null(queue) && queue) mode = "queue"
 
+  # verify bundling arguments and warn if not sensible
+  addBundling <- !is.null(bundleDimension)
+  #  check to see if bundleDimension is a valid column name
+  if(addBundling && !(bundleDimension %in% colnames(data))) {
+    warning(
+      "bundleDimension is not a valid column name for the data provided.  Ignoring bundleDimension.",
+      call. = FALSE
+    )
+    bundleDimension <- NULL
+    addBundling = FALSE
+  }
+  if(!addBundling && smoothness != 0) {
+    warning(
+      "Smoothness specified not equal to 0 and bundleDimension not provided.  Ignoring smoothness argument.
+      Please provide bundleDimension for smoothness to work correctly",
+      call. = FALSE
+    )
+    smoothness <- 0
+  }
+
   # convert character tasks to htmlwidgets::JS
   if ( !is.null(tasks) ){
     tasks = lapply(
@@ -240,6 +268,9 @@ parcoords <- function(
       , mode = mode
       , rate = rate
       , dimensions = dimensions
+      , bundleDimension = bundleDimension
+      , bundlingStrength = bundlingStrength
+      , smoothness = smoothness
       , width = width
       , height = height
     )
@@ -250,10 +281,20 @@ parcoords <- function(
   # remove NULL options
   x$options = Filter( Negate(is.null), x$options )
 
+  dep <- list()
   # include d3 if withD3 is TRUE
-  dep <- NULL
   if(withD3 == TRUE) {
-    dep <- d3r::d3_dep_v5()
+    dep[[length(dep) + 1]] <- d3r::d3_dep_v5()
+  }
+
+  # include sylvester.js if bundling
+  if(addBundling) {
+    dep[[length(dep) + 1]] <- htmltools::htmlDependency(
+      name = "sylvester",
+      version = "0.1.3",
+      src = system.file("htmlwidgets/lib/sylvester", package="parcoords"),
+      script = "sylvester.js"
+    )
   }
 
 
