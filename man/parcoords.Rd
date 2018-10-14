@@ -21,9 +21,17 @@ to hide it.}
 
 \item{color}{see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_color}{parcoords.color( color )}.
 Color can be a single color as rgb or hex.  For a color function,
-provide a list( colorScale = , colorBy = ) where colorScale is
-a function such as \code{d3.scaleOrdinal(d3.schemeCategory10)} and colorBy
-is the column name from the data to determine color.  If using a \code{d3}
+provide a
+\code{list( colorScale = , colorBy = , colorSheme =, colorInterpolator = , colorDomain =)}
+where colorScale is the name of the
+\href{https://github.com/d3/d3-scale/blob/master/README.md#sequential-scales}{d3-scale} suc as
+\code{scaleOrdinal} or \code{scaleSequential},
+colorBy with the column name from the data to determine color.  If appplying color to a
+discrete or ordinal variable then please also supply colorScheme, such as
+\code{schemCategory10}.  If applying color
+to a continuous variable then please also supply colorInterpolator
+with colorInterpolator as the name of the \href{https://github.com/d3/d3-scale/blob/master/README.md#sequential_interpolator}{d3 interpolator},
+such as \code{interpolateViridis}. If using a \code{d3}
 color scale, then make sure to use the argument \code{withD3 = TRUE}.}
 
 \item{brushMode}{string, either \code{"1D-axes"}, \code{"1D-axes-multi"},
