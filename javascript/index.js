@@ -57,6 +57,8 @@ HTMLWidgets.widget({
             0
           );
         }
+
+        return pc;
       }
 
       parcoords.center = center.bind(parcoords);
