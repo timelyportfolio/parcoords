@@ -49,11 +49,11 @@ HTMLWidgets.widget({
         var pc = this;
         var pcel = pc.svg.node().parentNode.parentNode;
         var xp = pc.xscale(dim);
-        var ws = document.body.getBoundingClientRect().width;
+        var ws = pcel.getBoundingClientRect().width;
 
         if(xp) {
           pcel.scrollTo(
-            xp - ws/2 + pc.margin().left + pcel.getBoundingClientRect().left,
+            xp - ws/2 + pc.margin().left,
             0
           );
         }
