@@ -63,6 +63,26 @@ HTMLWidgets.widget({
 
       parcoords.center = center.bind(parcoords);
 
+      var snapshot = function() {
+        var pc = this;
+        pc.mergeParcoords(function(canvas) {
+          canvas.toBlob(function(blob) {
+            var a = document.createElement("a"),
+                aUrl = URL.createObjectURL(blob);
+            a.download = "untitled.png";
+            a.href = aUrl;
+            document.body.appendChild(a);
+            setTimeout(function() {
+              a.click();
+              aUrl = URL.revokeObjectURL(aUrl);
+              document.body.removeChild(a);
+            }, 10);
+          })
+        });
+      }
+
+      parcoords.snapshot = snapshot.bind(parcoords);
+
       // use expando to attach parcoords to the element
       //  this duplicates the step below
       //  but might make it easier for a user

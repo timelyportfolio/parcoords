@@ -1,3 +1,5 @@
+#### filter proxy example ----
+
 library(parcoords)
 library(shiny)
 
@@ -43,3 +45,106 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui = ui, server = server)
+
+### center proxy example ----
+library(shiny)
+library(parcoords)
+
+ui <- tags$div(
+  parcoordsOutput("pc", width = 2000),
+  width = 2000
+)
+
+server <- function(input, output, session) {
+  # create a proxy with which we will communicate between
+  #   Shiny and the parallel coordinates without a re-render
+  pcp <- parcoordsProxy("pc")
+
+  output$pc <- renderParcoords({
+    parcoords(mtcars)
+  })
+
+  pcCenter(pcp, 'drat')
+}
+
+shinyApp(ui=ui, server=server)
+
+### hide/unhide proxy example ----
+library(parcoords)
+library(shiny)
+
+ui <- tagList(
+  selectizeInput(
+    inputId = "columns",
+    label = "Columns to Hide",
+    choices = c("names",colnames(mtcars)),
+    selected = "names",
+    multiple = TRUE
+  ),
+  parcoordsOutput("pc"),
+  checkboxInput("hidenames", label="Hide Row Names", value=TRUE),
+  parcoordsOutput("pc2")
+)
+
+server <- function(input, output, session) {
+  output$pc <- renderParcoords({
+    parcoords(mtcars, rownames = FALSE, brushMode = "1d")
+  })
+
+  output$pc2 <- renderParcoords({
+    parcoords(mtcars, rownames = FALSE)
+  })
+
+  pcUnhide
+
+  observeEvent(input$columns, {
+    # create a proxy with which we will communicate between
+    #   Shiny and the parallel coordinates without a re-render
+    pcp <- parcoordsProxy("pc")
+
+    pcHide(pcp, input$columns)
+  }, ignoreInit = TRUE, ignoreNULL = FALSE)
+
+  observeEvent(input$hidenames, {
+    # create a proxy with which we will communicate between
+    #   Shiny and the parallel coordinates without a re-render
+    pcp2 <- parcoordsProxy("pc2")
+    if(input$hidenames) {
+      pcHide(pcp2, "names")
+    } else {
+      pcUnhide(pcp2, "names")
+    }
+  })
+
+}
+
+shinyApp(ui = ui, server = server)
+
+
+### center proxy example ----
+library(shiny)
+library(parcoords)
+
+ui <- tags$div(
+  actionButton(inputId = "snapBtn", label = "snapshot"),
+  parcoordsOutput("pc", height=400)
+)
+
+server <- function(input, output, session) {
+  # create a proxy with which we will communicate between
+  #   Shiny and the parallel coordinates without a re-render
+  pcp <- parcoordsProxy("pc")
+
+  output$pc <- renderParcoords({
+    parcoords(mtcars)
+  })
+
+  observeEvent(input$snapBtn, {
+    # create a proxy with which we will communicate between
+    #   Shiny and the parallel coordinates without a re-render
+    pcp <- parcoordsProxy("pc")
+    pcSnapshot(pcp)
+  })
+}
+
+shinyApp(ui=ui, server=server)

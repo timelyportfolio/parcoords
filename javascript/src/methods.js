@@ -8,6 +8,10 @@ methods.center = function(dim) {
   this.center(dim);
 }
 
+methods.snapshot = function() {
+  this.snapshot();
+}
+
 methods.hide = function(dim) {
   // append dim to currently hidden axes
   if(!Array.isArray(dim)) {

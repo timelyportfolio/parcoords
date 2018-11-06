@@ -79,3 +79,22 @@ pcUnhide <- function(pc=NULL, dim = NULL) {
   invokeRemote(pc, "unhide", list(dim = dim))
   pc
 }
+
+#' Download image of \code{parcoords} through \code{parcoordsProxy}
+#'
+#' @param pc \code{parcoordsProxy}
+#'
+#' @return \code{parcoords_proxy}
+#' @export
+#'
+pcSnapshot <- function(pc=NULL) {
+  if(!inherits(pc, "parcoords_proxy")) {
+    stop(
+      paste0("expecting pc argument to be parcoordsProxy but got ", class(pc)),
+      call. = FALSE
+    )
+  }
+
+  invokeRemote(pc, "snapshot", list())
+  pc
+}
