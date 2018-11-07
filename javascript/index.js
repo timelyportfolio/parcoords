@@ -227,7 +227,7 @@ HTMLWidgets.widget({
               })
             );
           } else {
-            colorScale = d3[colorScaleType](d3[colorScaleScheme]);
+            colorScale = d3[colorScaleType](d3[colorScaleScheme] || colorScaleScheme);
           }
 
           window.cs = colorScale;
