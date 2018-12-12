@@ -9,7 +9,11 @@ if(brush!==undefined&&d3Brush.brushSelection(brushNodes[cur])!==null){acc[cur]=b
 var brushSelections={};pc.g().selectAll('.brush').each(function(d){brushSelections[d]=d3Selection.select(this);});// loop over each dimension and update appropriately (if it was passed in through extents)
 Object.keys(config.dimensions).forEach(function(d){if(extents[d]===undefined){return;}var brush=brushes[d];if(brush!==undefined){var dim=config.dimensions[d];var yExtent=extents[d].map(dim.yscale);//update the extent
 //sets the brushable extent to the specified array of points [[x0, y0], [x1, y1]]
-brush.extent([[-15,yExtent[1]],[15,yExtent[0]]]);//redraw the brush
+//we actually don't need this since we are using brush.move below
+//extents set the limits of the brush which means a user will not be able
+//to move or drag the brush beyond the limits set by brush.extent
+//brush.extent([[-15, yExtent[1]], [15, yExtent[0]]]);
+//redraw the brush
 //https://github.com/d3/d3-brush#brush_move
 // For an x-brush, it must be defined as [x0, x1]; for a y-brush, it must be defined as [y0, y1].
 brushSelections[d].call(brush).call(brush.move,yExtent.reverse());//fire some events
@@ -274,7 +278,7 @@ pc.renderBrushed();};};// filter data much like a brush but from outside of the 
 var filter=function filter(config,pc,events){return function(){var filters=arguments.length>0&&arguments[0]!==undefined?arguments[0]:null;// will reset if null which goes against most of the API
 //   need to think this through but maybe provide filterReset like brushReset
 //   as a better alternative
-config.filters=filters;filterUpdated(config,pc,events)(pc.selected());return this;};};var version="2.1.9";var DefaultConfig={data:[],highlighted:[],marked:[],dimensions:{},dimensionTitleRotation:0,brushes:[],brushed:false,brushedColor:null,alphaOnBrushed:0.0,lineWidth:1.4,highlightedLineWidth:3,mode:'default',markedLineWidth:3,markedShadowColor:'#ffffff',markedShadowBlur:10,rate:20,width:600,height:300,margin:{top:24,right:20,bottom:12,left:20},nullValueSeparator:'undefined',// set to "top" or "bottom"
+config.filters=filters;filterUpdated(config,pc,events)(pc.selected());return this;};};var version="2.2.1";var DefaultConfig={data:[],highlighted:[],marked:[],dimensions:{},dimensionTitleRotation:0,brushes:[],brushed:false,brushedColor:null,alphaOnBrushed:0.0,lineWidth:1.4,highlightedLineWidth:3,mode:'default',markedLineWidth:3,markedShadowColor:'#ffffff',markedShadowBlur:10,rate:20,width:600,height:300,margin:{top:24,right:20,bottom:12,left:20},nullValueSeparator:'undefined',// set to "top" or "bottom"
 nullValueSeparatorPadding:{top:8,right:0,bottom:8,left:0},color:'#069',composite:'source-over',alpha:0.7,bundlingStrength:0.5,bundleDimension:null,smoothness:0.0,showControlPoints:false,hideAxis:[],flipAxes:[],animationTime:1100,// How long it takes to flip the axis when you double click
 rotateLabels:false,resolution:false,filters:null};var _this$4=undefined;var initState=function initState(userConfig){var config=_extends2({},DefaultConfig,userConfig);if(userConfig&&userConfig.dimensionTitles){console.warn('dimensionTitles passed in userConfig is deprecated. Add title to dimension object.');d3Collection.entries(userConfig.dimensionTitles).forEach(function(d){if(config.dimensions[d.key]){config.dimensions[d.key].title=config.dimensions[d.key].title?config.dimensions[d.key].title:d.value;}else{config.dimensions[d.key]={title:d.value};}});}var eventTypes=['render','resize','highlight','mark','brush','brushend','brushstart','axesreorder'].concat(d3Collection.keys(config));var events=d3Dispatch.dispatch.apply(_this$4,eventTypes),flags={brushable:false,reorderable:false,axes:false,interactive:false,debug:false},xscale=d3Scale.scalePoint(),dragging={},axis=d3Axis.axisLeft().ticks(5),ctx={},canvas={};var brush={modes:{None:{install:function install(pc){},// Nothing to be done.
 uninstall:function uninstall(pc){},// Nothing to be done.
