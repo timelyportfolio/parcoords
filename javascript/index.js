@@ -98,8 +98,8 @@ HTMLWidgets.widget({
       if (HTMLWidgets.shinyMode){
         parcoords.on("render", function() {
           var ids = [];
-          if(this.brushed()){
-            ids = this.brushed().map(function(d){
+          if(this.selected()){
+            ids = this.selected().map(function(d){
               return d.names;
             })
           }
@@ -121,15 +121,15 @@ HTMLWidgets.widget({
         parcoords.on("render", function() {
           var ids = [];
           if(
-            this.brushed() &&
-            this.brushed().length < parcoords.data().length
+            this.selected() &&
+            this.selected().length < parcoords.data().length
           ){
-            ids = this.brushed().map(function(d){
+            ids = this.selected().map(function(d){
               return d.key_;
             })
             // add brushed to filter
             ct_sel.set(ids);
-            this.highlight(this.brushed());
+            this.highlight(this.selected());
           } else {
             parcoords.unhighlight();
             // instead set to empty array

@@ -653,11 +653,11 @@ var center=function(dim){var pc=this;var pcel=pc.svg.node().parentNode.parentNod
 el.parcoords=parcoords;// also attach the parallel coordinates and x to instance
 instance.parcoords=parcoords;//identify the brushed elements and return those data IDs to Rshiny
 //the parcoords.on("brush",function(d)){} only works with 1D-axes selection
-if(HTMLWidgets.shinyMode){parcoords.on("render",function(){var ids=[];if(this.brushed()){ids=this.brushed().map(function(d){return d.names;});}//return the brushed row names
+if(HTMLWidgets.shinyMode){parcoords.on("render",function(){var ids=[];if(this.selected()){ids=this.selected().map(function(d){return d.names;});}//return the brushed row names
 if(Shiny.onInputChange){Shiny.onInputChange(el.id+"_brushed_row_names",ids);}});}// separate from above Shiny handling for now,
 //   but eventually integrate
-var crosstalk_supported=typeof crosstalk!=="undefined"&&typeof x.crosstalk_opts!=="undefined";if(crosstalk_supported){var ct_sel=new crosstalk.SelectionHandle(x.crosstalk_opts.group);parcoords.on("render",function(){var ids=[];if(this.brushed()&&this.brushed().length<parcoords.data().length){ids=this.brushed().map(function(d){return d.key_;});// add brushed to filter
-ct_sel.set(ids);this.highlight(this.brushed());}else{parcoords.unhighlight();// instead set to empty array
+var crosstalk_supported=typeof crosstalk!=="undefined"&&typeof x.crosstalk_opts!=="undefined";if(crosstalk_supported){var ct_sel=new crosstalk.SelectionHandle(x.crosstalk_opts.group);parcoords.on("render",function(){var ids=[];if(this.selected()&&this.selected().length<parcoords.data().length){ids=this.selected().map(function(d){return d.key_;});// add brushed to filter
+ct_sel.set(ids);this.highlight(this.selected());}else{parcoords.unhighlight();// instead set to empty array
 // first check to make sure parcoords initiated
 //  before clearing
 if(typeof parcoords.brushResetter!=="undefined"&&parcoords.brushResetter==="self"){// seems this sets to undefined
