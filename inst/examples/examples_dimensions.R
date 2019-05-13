@@ -71,7 +71,7 @@ function(){
 
 parcoords(
   mtcars
-  ,rownames = F
+  ,rownames = FALSE
   ,brushMode = "1d-multi"
   ,brushPredicate = "OR"
   ,dimensions = list(

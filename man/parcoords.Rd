@@ -4,11 +4,14 @@
 \alias{parcoords}
 \title{htmlwidget for d3.js parallel-coordinates}
 \usage{
-parcoords(data = NULL, rownames = T, color = NULL, brushMode = NULL,
-  brushPredicate = "and", alphaOnBrushed = NULL, reorderable = F,
-  axisDots = NULL, margin = NULL, composite = NULL, alpha = NULL,
-  queue = F, mode = F, rate = NULL, dimensions = NULL, tasks = NULL,
-  autoresize = FALSE, width = NULL, height = NULL, elementId = NULL)
+parcoords(data = NULL, rownames = TRUE, color = NULL,
+  brushMode = NULL, brushPredicate = "and", alphaOnBrushed = NULL,
+  reorderable = FALSE, axisDots = NULL, margin = NULL,
+  composite = NULL, alpha = NULL, queue = FALSE, mode = FALSE,
+  rate = NULL, dimensions = NULL, bundleDimension = NULL,
+  bundlingStrength = 0.5, smoothness = 0, tasks = NULL,
+  autoresize = FALSE, withD3 = FALSE, width = NULL, height = NULL,
+  elementId = NULL)
 }
 \arguments{
 \item{data}{data.frame with data to use in the chart}
@@ -20,9 +23,18 @@ to hide it.}
 
 \item{color}{see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_color}{parcoords.color( color )}.
 Color can be a single color as rgb or hex.  For a color function,
-provide a list( colorScale = , colorBy = ) where colorScale is
-a function such as \code{d3.scale.category10()} and colorBy
-is the column name from the data to determine color.}
+provide a
+\code{list( colorScale = , colorBy = , colorSheme =, colorInterpolator = , colorDomain =)}
+where colorScale is the name of the
+\href{https://github.com/d3/d3-scale/blob/master/README.md#sequential-scales}{d3-scale} such as
+\code{scaleOrdinal} or \code{scaleSequential},
+colorBy with the column name from the data to determine color.  If appplying color to a
+discrete or ordinal variable then please also supply colorScheme, such as
+\code{schemCategory10}.  If applying color
+to a continuous variable then please also supply colorInterpolator
+with colorInterpolator as the name of the \href{https://github.com/d3/d3-scale/blob/master/README.md#sequential_interpolator}{d3 interpolator},
+such as \code{interpolateViridis}. If using a \code{d3}
+color scale, then make sure to use the argument \code{withD3 = TRUE}.}
 
 \item{brushMode}{string, either \code{"1D-axes"}, \code{"1D-axes-multi"},
 or \code{"2D-strums"}
@@ -58,6 +70,14 @@ for a full discussion and some recommendations}
 
 \item{dimensions}{\code{list} to customize axes dimensions.}
 
+\item{bundleDimension}{character string for the column or variable on which to bundle}
+
+\item{bundlingStrength}{numeric value between 0 and 1 for the strength of the bundling.  This value will
+not affect the parallel coordinates if \code{bundleDimension} is not set and will be ignored.}
+
+\item{smoothness}{numeric value between between 0 and 1 for stength of smoothing or curvature.    This value will
+not affect the parallel coordinates if \code{bundleDimension} is not set and will be ignored.}
+
 \item{tasks}{a character string or \code{\link[htmlwidgets]{JS}} or list of
 strings or \code{JS} representing a JavaScript function(s) to run
 after the \code{parcoords} has rendered.  These provide an opportunity
@@ -72,6 +92,11 @@ when the size of the container changes.  This is useful
 in contexts such as rmarkdown slide presentations or
 flexdashboard.  However, this will not be useful if you
 expect bigger data or a more typical html context.}
+
+\item{withD3}{\code{logical} to include d3 dependency from \code{d3r}. The 'parcoords'
+htmlwidget uses a standalone JavaScript build and will
+not include the entire d3 in the global/window namespace.  To include
+d3.js in this way, use \code{withD3=TRUE}.}
 
 \item{width}{integer in pixels defining the width of the widget.  Autosizing  to 100%
 of the widget container will occur if \code{ width = NULL }.}
@@ -107,38 +132,41 @@ wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}{para
     mtcars
     , color = list(
        colorBy="cyl"
-       ,colorScale=htmlwidgets::JS('d3.scale.category10()')
+       ,colorScale=htmlwidgets::JS('d3.scaleOrdinal(d3.schemeCategory10)')
     )
+    , withD3 = TRUE
   )
   ### be careful; this might strain your system #######
   ###                                           #######
   data( diamonds, package = "ggplot2" )
   parcoords(
     diamonds
-    ,rownames=F
+    ,rownames = FALSE
     ,brushMode = "1d-axes"
-    ,reorderable=T
-    ,queue = T
+    ,reorderable = TRUE
+    ,queue = TRUE
     ,color= list(
        colorBy="cut"
-       ,colorScale = htmlwidgets::JS("d3.scale.category10()")
-     )
+       ,colorScale = htmlwidgets::JS("d3.scaleOrdinal(d3.schemeCategory10)")
+    )
+    ,withD3 = TRUE
   )
   # or if we want to add in a dplyr chain
   library(dplyr)
   data( diamonds, package = "ggplot2" )
   diamonds \%>\%
-     mutate( carat = cut(carat,breaks = pretty(carat), right =F) ) \%>\%
+     mutate( carat = cut(carat,breaks = pretty(carat), right = FALSE) ) \%>\%
      group_by( carat ) \%>\%
      select(-c(cut,color,clarity)) \%>\%
-     summarise_each(funs(mean),-carat) \%>\%
+     summarise_all(funs(mean),-carat) \%>\%
      parcoords(
-        rownames= F
+        rownames= FALSE
         ,color = list(
-           colorScale = htmlwidgets::JS('d3.scale.category10()' )
+           colorScale = htmlwidgets::JS('d3.scaleOrdinal(d3.schemeSet3)' )
           , colorBy = "carat"
         )
         ,brushMode = "1D"
+        ,withD3 = TRUE
       )
 }
 library(parcoords)
@@ -214,7 +242,7 @@ function(){
 
 parcoords(
   mtcars
-  ,rownames = F
+  ,rownames = FALSE
   ,brushMode = "1d-multi"
   ,brushPredicate = "OR"
   ,dimensions = list(

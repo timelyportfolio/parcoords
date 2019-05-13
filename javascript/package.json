@@ -1,0 +1,46 @@
+{
+  "name": "parcoords-widget",
+  "version": "0.0.1",
+  "description": "R htmlwidget for parallel-coordinates.",
+  "keywords": [
+    "d3",
+    "d3-module",
+    "parcoords",
+    "data visualization",
+    "htmlwidgets",
+    "R"
+  ],
+  "author": {
+    "name": "Kenton Russell",
+    "url": "https://buildingwidgets.com"
+  },
+  "license": "MIT",
+  "main": "build/parcoords.js",
+  "jsnext:main": "index",
+  "homepage": "https://github.com/timelyportfolio/parcoords",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/timelyportfolio/parcoords.git"
+  },
+  "scripts": {
+    "build": "rm -rf build && mkdir build && rollup -g d3-selection:d3 -f umd -n d3 -o build/parcoords.js -- index.js",
+    "copywidget": "browserify build/parcoords.js > build/parcoords-bundle.js && babel build/parcoords-bundle.js --out-dir build && uglifyjs build/parcoords-bundle.js -c -m -o build/parcoords.min.js && replace-in-file \"return matchArray\" \"return {matchArray:matchArray}\" ./build/parcoords-bundle.js && cp build/parcoords-bundle.js ../inst/htmlwidgets/parcoords.js",
+    "replace": "replace-in-file 'return matchArray' 'return {matchArray:matchArray}' './build/parcoords-bundle.js'"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.0.0",
+    "d3-selection": "^1.1.0",
+    "parcoord-es": "file:../../parcoords-es"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
+    "babel-plugin-transform-object-assign": "^6.22.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "browserify": "^14.3.0",
+    "replace-in-file": "^3.4.2",
+    "tape": "^4.6.0",
+    "uglify-js": "^2.7.3"
+  }
+}

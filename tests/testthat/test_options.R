@@ -10,7 +10,7 @@ test_that("options",{
   # will add rownames to the data regardless of rownames parameter
   expect_identical( parcoords(mtcars)$x$data, data.frame(names = rownames(mtcars),mtcars,stringsAsFactors=F ))
   # make sure rownames is passed through
-  expect_true( !parcoords( data.frame(), rownames=F )$x$options$rownames )
+  expect_true( !parcoords( data.frame(), rownames=FALSE )$x$options$rownames )
 
   # check brushmode
   #   this is designed to be flexible and forgiving
@@ -34,7 +34,7 @@ test_that("options",{
   )
   #   if single numeric then apply param to all sides
   expect_identical(
-    parcoords(data.frame(),margin=0)$x$options$margin
+    suppressWarnings(parcoords(data.frame(),margin=0)$x$options$margin)
     ,list( top = 0, bottom = 0, left=0, right = 0)
   )
   expect_identical(
@@ -47,11 +47,18 @@ test_that("options",{
   expect_equal( parcoords( data.frame(), alpha = 0.2 )$x$options$alpha, 0.2)
 
   # check that queue= T becomes mode = "queue"
-  expect_match( parcoords( data.frame(), queue = T )$x$options$mode, "queue" )
+  expect_match( parcoords( data.frame(), queue = TRUE )$x$options$mode, "queue" )
   #   and that when queue is null does not overwrite mode
   expect_match( parcoords( data.frame(), queue = NULL, mode="queue" )$x$options$mode, "queue" )
 
   # check that rate gets transmitted
   expect_null( parcoords(data.frame() )$x$options$rate )
   expect_equal( parcoords(data.frame(), rate = 200)$x$options$rate, 200)
+
+  # check bundling
+  expect_warning( parcoords(head(mtcars), bundleDimension = "z") )
+  expect_identical( suppressWarnings(parcoords(head(mtcars), bundleDimension = "z"))$x$options$bundleDimension, NULL )
+  expect_warning( parcoords(data.frame(), smoothness=0.4) )
+  expect_identical( suppressWarnings(parcoords(head(mtcars), smoothness=0.5))$x$options$smoothness, 0 )
+  expect_match( parcoords(head(mtcars), bundleDimension = "cyl")$dependencies[[1]]$name, "sylvester" )
 })

@@ -31,14 +31,14 @@ browsable(tagList(
     tags$br(),
     spark_mpg,
     tags$br(),
-    modifyList(spark_mpg,list(elementId="sparkline-mpg-selected"))
+    utils::modifyList(spark_mpg,list(elementId="sparkline-mpg-selected"))
   ),
   tags$div(
     tags$span(style="font-style:bold","disp"),
     tags$br(),
     spark_disp,
     tags$br(),
-    modifyList(spark_disp,list(elementId="sparkline-disp-selected"))
+    utils::modifyList(spark_disp,list(elementId="sparkline-disp-selected"))
   ),
   # hack to make data available to window/global
   #  probably should not be considered best practice

@@ -10,9 +10,18 @@
 #'          to hide it.
 #' @param color see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_color}{parcoords.color( color )}.
 #'          Color can be a single color as rgb or hex.  For a color function,
-#'          provide a list( colorScale = , colorBy = ) where colorScale is
-#'          a function such as \code{d3.scale.category10()} and colorBy
-#'          is the column name from the data to determine color.
+#'          provide a
+#'          \code{list( colorScale = , colorBy = , colorSheme =, colorInterpolator = , colorDomain =)}
+#'          where colorScale is the name of the
+#'          \href{https://github.com/d3/d3-scale/blob/master/README.md#sequential-scales}{d3-scale} such as
+#'          \code{scaleOrdinal} or \code{scaleSequential},
+#'          colorBy with the column name from the data to determine color.  If appplying color to a
+#'          discrete or ordinal variable then please also supply colorScheme, such as
+#'          \code{schemCategory10}.  If applying color
+#'          to a continuous variable then please also supply colorInterpolator
+#'          with colorInterpolator as the name of the \href{https://github.com/d3/d3-scale/blob/master/README.md#sequential_interpolator}{d3 interpolator},
+#'          such as \code{interpolateViridis}. If using a \code{d3}
+#'          color scale, then make sure to use the argument \code{withD3 = TRUE}.
 #' @param brushMode string, either \code{"1D-axes"}, \code{"1D-axes-multi"},
 #'          or \code{"2D-strums"}
 #'          giving the type of desired brush behavior for the chart.
@@ -35,6 +44,11 @@
 #' @param rate integer rate at which render will queue; see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_rate}{}
 #'          for a full discussion and some recommendations
 #' @param dimensions \code{list} to customize axes dimensions.
+#' @param bundleDimension character string for the column or variable on which to bundle
+#' @param bundlingStrength numeric value between 0 and 1 for the strength of the bundling.  This value will
+#'          not affect the parallel coordinates if \code{bundleDimension} is not set and will be ignored.
+#' @param smoothness numeric value between between 0 and 1 for stength of smoothing or curvature.    This value will
+#'          not affect the parallel coordinates if \code{bundleDimension} is not set and will be ignored.
 #' @param tasks a character string or \code{\link[htmlwidgets]{JS}} or list of
 #'          strings or \code{JS} representing a JavaScript function(s) to run
 #'          after the \code{parcoords} has rendered.  These provide an opportunity
@@ -48,6 +62,10 @@
 #'          in contexts such as rmarkdown slide presentations or
 #'          flexdashboard.  However, this will not be useful if you
 #'          expect bigger data or a more typical html context.
+#' @param withD3 \code{logical} to include d3 dependency from \code{d3r}. The 'parcoords'
+#'          htmlwidget uses a standalone JavaScript build and will
+#'          not include the entire d3 in the global/window namespace.  To include
+#'          d3.js in this way, use \code{withD3=TRUE}.
 #' @param width integer in pixels defining the width of the widget.  Autosizing  to 100%
 #'          of the widget container will occur if \code{ width = NULL }.
 #' @param height integer in pixels defining the height of the widget.  Autosizing to 400px
@@ -74,38 +92,41 @@
 #'     mtcars
 #'     , color = list(
 #'        colorBy="cyl"
-#'        ,colorScale=htmlwidgets::JS('d3.scale.category10()')
+#'        ,colorScale=htmlwidgets::JS('d3.scaleOrdinal(d3.schemeCategory10)')
 #'     )
+#'     , withD3 = TRUE
 #'   )
 #'   ### be careful; this might strain your system #######
 #'   ###                                           #######
 #'   data( diamonds, package = "ggplot2" )
 #'   parcoords(
 #'     diamonds
-#'     ,rownames=F
+#'     ,rownames = FALSE
 #'     ,brushMode = "1d-axes"
-#'     ,reorderable=T
-#'     ,queue = T
+#'     ,reorderable = TRUE
+#'     ,queue = TRUE
 #'     ,color= list(
 #'        colorBy="cut"
-#'        ,colorScale = htmlwidgets::JS("d3.scale.category10()")
-#'      )
+#'        ,colorScale = htmlwidgets::JS("d3.scaleOrdinal(d3.schemeCategory10)")
+#'     )
+#'     ,withD3 = TRUE
 #'   )
 #'   # or if we want to add in a dplyr chain
 #'   library(dplyr)
 #'   data( diamonds, package = "ggplot2" )
 #'   diamonds %>%
-#'      mutate( carat = cut(carat,breaks = pretty(carat), right =F) ) %>%
+#'      mutate( carat = cut(carat,breaks = pretty(carat), right = FALSE) ) %>%
 #'      group_by( carat ) %>%
 #'      select(-c(cut,color,clarity)) %>%
-#'      summarise_each(funs(mean),-carat) %>%
+#'      summarise_all(funs(mean),-carat) %>%
 #'      parcoords(
-#'         rownames= F
+#'         rownames= FALSE
 #'         ,color = list(
-#'            colorScale = htmlwidgets::JS('d3.scale.category10()' )
+#'            colorScale = htmlwidgets::JS('d3.scaleOrdinal(d3.schemeSet3)' )
 #'           , colorBy = "carat"
 #'         )
 #'         ,brushMode = "1D"
+#'         ,withD3 = TRUE
 #'       )
 #' }
 #' @example ./inst/examples/examples_dimensions.R
@@ -115,22 +136,26 @@
 #' @export
 parcoords <- function(
   data = NULL
-  , rownames = T
+  , rownames = TRUE
   , color = NULL
   , brushMode = NULL
   , brushPredicate = "and"
   , alphaOnBrushed = NULL
-  , reorderable = F
+  , reorderable = FALSE
   , axisDots = NULL
   , margin = NULL
   , composite = NULL
   , alpha = NULL
-  , queue = F
-  , mode = F
+  , queue = FALSE
+  , mode = FALSE
   , rate = NULL
   , dimensions = NULL
+  , bundleDimension = NULL
+  , bundlingStrength = 0.5
+  , smoothness = 0
   , tasks = NULL
   , autoresize = FALSE
+  , withD3 = FALSE
   , width = NULL
   , height = NULL
   , elementId = NULL
@@ -151,7 +176,7 @@ parcoords <- function(
   if(!is.data.frame(data)) stop( "data parameter should be of type data.frame", call. = FALSE)
 
   # add rownames to data
-  #  rownames = F will tell us to hide these with JavaScript
+  #  rownames = FALSE will tell us to hide these with JavaScript
   data <- data.frame(
     "names" = rownames(data)
     , data
@@ -187,13 +212,33 @@ parcoords <- function(
     margin = list( top=margin, bottom=margin, left=margin, right = margin)
   }
   if( is.list(margin) ){
-    margin =  modifyList(list(top=50,bottom=50,left=100,right=50), margin )
+    margin =  utils::modifyList(list(top=50,bottom=50,left=100,right=50), margin )
   } else {
     margin = list(top=50,bottom=50,left=100,right=50)
   }
 
   # queue=T needs to be converted to render = "queue"
   if (!is.null(queue) && queue) mode = "queue"
+
+  # verify bundling arguments and warn if not sensible
+  addBundling <- !is.null(bundleDimension)
+  #  check to see if bundleDimension is a valid column name
+  if(addBundling && !(bundleDimension %in% colnames(data))) {
+    warning(
+      "bundleDimension is not a valid column name for the data provided.  Ignoring bundleDimension.",
+      call. = FALSE
+    )
+    bundleDimension <- NULL
+    addBundling = FALSE
+  }
+  if(!addBundling && smoothness != 0) {
+    warning(
+      "Smoothness specified not equal to 0 and bundleDimension not provided.  Ignoring smoothness argument.
+      Please provide bundleDimension for smoothness to work correctly",
+      call. = FALSE
+    )
+    smoothness <- 0
+  }
 
   # convert character tasks to htmlwidgets::JS
   if ( !is.null(tasks) ){
@@ -223,6 +268,9 @@ parcoords <- function(
       , mode = mode
       , rate = rate
       , dimensions = dimensions
+      , bundleDimension = bundleDimension
+      , bundlingStrength = bundlingStrength
+      , smoothness = smoothness
       , width = width
       , height = height
     )
@@ -233,6 +281,23 @@ parcoords <- function(
   # remove NULL options
   x$options = Filter( Negate(is.null), x$options )
 
+  dep <- list()
+  # include d3 if withD3 is TRUE
+  if(withD3 == TRUE) {
+    dep[[length(dep) + 1]] <- d3r::d3_dep_v5()
+  }
+
+  # include sylvester.js if bundling
+  if(addBundling) {
+    dep[[length(dep) + 1]] <- htmltools::htmlDependency(
+      name = "sylvester",
+      version = "0.1.3",
+      src = system.file("htmlwidgets/lib/sylvester", package="parcoords"),
+      script = "sylvester.js"
+    )
+  }
+
+
   # create widget
   pc <- htmlwidgets::createWidget(
     name = 'parcoords',
@@ -240,6 +305,7 @@ parcoords <- function(
     width = width,
     height = height,
     package = 'parcoords',
+    dependencies = dep,
     elementId = elementId
   )
 
@@ -253,21 +319,42 @@ parcoords <- function(
 }
 
 
-#' Widget output function for use in Shiny
+#' Shiny bindings for 'parcoords'
 #'
-#' @example man-roxygen/shiny.R
+#' Output and render functions for using sunburst within Shiny
+#' applications and interactive Rmd documents.
+#'
+#' @param outputId output variable to read from
+#' @param width,height Must be a valid CSS unit (like \code{'100\%'},
+#'   \code{'400px'}, \code{'auto'}) or a number, which will be coerced to a
+#'   string and have \code{'px'} appended.
+#' @param expr An expression that generates a sunburst
+#' @param env The environment in which to evaluate \code{expr}.
+#' @param quoted Is \code{expr} a quoted expression (with \code{quote()}). This
+#'   is useful if you want to save an expression in a variable.
+#'
+#' @name parcoords-shiny
+#'
+#' @example inst/examples/examples_shiny.R
 #'
 #' @export
 parcoordsOutput <- function(outputId, width = '100%', height = '400px'){
   shinyWidgetOutput(outputId, 'parcoords', width, height, package = 'parcoords')
 }
 
-#' Widget render function for use in Shiny
-#'
-#' @seealso \code{\link{parcoordsOutput}}
+#' @rdname parcoords-shiny
 #'
 #' @export
 renderParcoords <- function(expr, env = parent.frame(), quoted = FALSE) {
   if (!quoted) { expr <- substitute(expr) } # force quoted
   shinyRenderWidget(expr, parcoordsOutput, env, quoted = TRUE)
+}
+
+# custom function html so that we can contain width of the parcoords chart
+parcoords_html <- function(name, package, id, style, class, ...) {
+  htmltools::tags$div(
+    id = id, style = style,
+    style = "position:relative; overflow-x:auto; overflow-y:hidden; max-width:100%;",
+    class = class, ...
+  )
 }
