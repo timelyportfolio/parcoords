@@ -19,7 +19,7 @@ tagList(
       add_markers(x=~hp, y=~mpg)
   ),
   tags$div(style="display:block;float:left;",
-    modifyList(pc,list(height=400, width=600))
+    utils::modifyList(pc,list(height=400, width=600))
   )
 ) %>%
   browsable()

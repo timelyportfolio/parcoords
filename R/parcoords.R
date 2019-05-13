@@ -101,10 +101,10 @@
 #'   data( diamonds, package = "ggplot2" )
 #'   parcoords(
 #'     diamonds
-#'     ,rownames=F
+#'     ,rownames = FALSE
 #'     ,brushMode = "1d-axes"
-#'     ,reorderable=T
-#'     ,queue = T
+#'     ,reorderable = TRUE
+#'     ,queue = TRUE
 #'     ,color= list(
 #'        colorBy="cut"
 #'        ,colorScale = htmlwidgets::JS("d3.scaleOrdinal(d3.schemeCategory10)")
@@ -115,12 +115,12 @@
 #'   library(dplyr)
 #'   data( diamonds, package = "ggplot2" )
 #'   diamonds %>%
-#'      mutate( carat = cut(carat,breaks = pretty(carat), right =F) ) %>%
+#'      mutate( carat = cut(carat,breaks = pretty(carat), right = FALSE) ) %>%
 #'      group_by( carat ) %>%
 #'      select(-c(cut,color,clarity)) %>%
 #'      summarise_all(funs(mean),-carat) %>%
 #'      parcoords(
-#'         rownames= F
+#'         rownames= FALSE
 #'         ,color = list(
 #'            colorScale = htmlwidgets::JS('d3.scaleOrdinal(d3.schemeSet3)' )
 #'           , colorBy = "carat"
@@ -136,18 +136,18 @@
 #' @export
 parcoords <- function(
   data = NULL
-  , rownames = T
+  , rownames = TRUE
   , color = NULL
   , brushMode = NULL
   , brushPredicate = "and"
   , alphaOnBrushed = NULL
-  , reorderable = F
+  , reorderable = FALSE
   , axisDots = NULL
   , margin = NULL
   , composite = NULL
   , alpha = NULL
-  , queue = F
-  , mode = F
+  , queue = FALSE
+  , mode = FALSE
   , rate = NULL
   , dimensions = NULL
   , bundleDimension = NULL
@@ -176,7 +176,7 @@ parcoords <- function(
   if(!is.data.frame(data)) stop( "data parameter should be of type data.frame", call. = FALSE)
 
   # add rownames to data
-  #  rownames = F will tell us to hide these with JavaScript
+  #  rownames = FALSE will tell us to hide these with JavaScript
   data <- data.frame(
     "names" = rownames(data)
     , data
@@ -212,7 +212,7 @@ parcoords <- function(
     margin = list( top=margin, bottom=margin, left=margin, right = margin)
   }
   if( is.list(margin) ){
-    margin =  modifyList(list(top=50,bottom=50,left=100,right=50), margin )
+    margin =  utils::modifyList(list(top=50,bottom=50,left=100,right=50), margin )
   } else {
     margin = list(top=50,bottom=50,left=100,right=50)
   }
@@ -319,18 +319,30 @@ parcoords <- function(
 }
 
 
-#' Widget output function for use in Shiny
+#' Shiny bindings for 'parcoords'
 #'
-#' @example man-roxygen/shiny.R
+#' Output and render functions for using sunburst within Shiny
+#' applications and interactive Rmd documents.
+#'
+#' @param outputId output variable to read from
+#' @param width,height Must be a valid CSS unit (like \code{'100\%'},
+#'   \code{'400px'}, \code{'auto'}) or a number, which will be coerced to a
+#'   string and have \code{'px'} appended.
+#' @param expr An expression that generates a sunburst
+#' @param env The environment in which to evaluate \code{expr}.
+#' @param quoted Is \code{expr} a quoted expression (with \code{quote()}). This
+#'   is useful if you want to save an expression in a variable.
+#'
+#' @name parcoords-shiny
+#'
+#' @example inst/examples/examples_shiny.R
 #'
 #' @export
 parcoordsOutput <- function(outputId, width = '100%', height = '400px'){
   shinyWidgetOutput(outputId, 'parcoords', width, height, package = 'parcoords')
 }
 
-#' Widget render function for use in Shiny
-#'
-#' @seealso \code{\link{parcoordsOutput}}
+#' @rdname parcoords-shiny
 #'
 #' @export
 renderParcoords <- function(expr, env = parent.frame(), quoted = FALSE) {

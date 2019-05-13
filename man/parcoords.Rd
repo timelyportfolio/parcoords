@@ -4,13 +4,14 @@
 \alias{parcoords}
 \title{htmlwidget for d3.js parallel-coordinates}
 \usage{
-parcoords(data = NULL, rownames = T, color = NULL, brushMode = NULL,
-  brushPredicate = "and", alphaOnBrushed = NULL, reorderable = F,
-  axisDots = NULL, margin = NULL, composite = NULL, alpha = NULL,
-  queue = F, mode = F, rate = NULL, dimensions = NULL,
-  bundleDimension = NULL, bundlingStrength = 0.5, smoothness = 0,
-  tasks = NULL, autoresize = FALSE, withD3 = FALSE, width = NULL,
-  height = NULL, elementId = NULL)
+parcoords(data = NULL, rownames = TRUE, color = NULL,
+  brushMode = NULL, brushPredicate = "and", alphaOnBrushed = NULL,
+  reorderable = FALSE, axisDots = NULL, margin = NULL,
+  composite = NULL, alpha = NULL, queue = FALSE, mode = FALSE,
+  rate = NULL, dimensions = NULL, bundleDimension = NULL,
+  bundlingStrength = 0.5, smoothness = 0, tasks = NULL,
+  autoresize = FALSE, withD3 = FALSE, width = NULL, height = NULL,
+  elementId = NULL)
 }
 \arguments{
 \item{data}{data.frame with data to use in the chart}
@@ -140,10 +141,10 @@ wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}{para
   data( diamonds, package = "ggplot2" )
   parcoords(
     diamonds
-    ,rownames=F
+    ,rownames = FALSE
     ,brushMode = "1d-axes"
-    ,reorderable=T
-    ,queue = T
+    ,reorderable = TRUE
+    ,queue = TRUE
     ,color= list(
        colorBy="cut"
        ,colorScale = htmlwidgets::JS("d3.scaleOrdinal(d3.schemeCategory10)")
@@ -154,12 +155,12 @@ wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}{para
   library(dplyr)
   data( diamonds, package = "ggplot2" )
   diamonds \%>\%
-     mutate( carat = cut(carat,breaks = pretty(carat), right =F) ) \%>\%
+     mutate( carat = cut(carat,breaks = pretty(carat), right = FALSE) ) \%>\%
      group_by( carat ) \%>\%
      select(-c(cut,color,clarity)) \%>\%
      summarise_all(funs(mean),-carat) \%>\%
      parcoords(
-        rownames= F
+        rownames= FALSE
         ,color = list(
            colorScale = htmlwidgets::JS('d3.scaleOrdinal(d3.schemeSet3)' )
           , colorBy = "carat"
@@ -241,7 +242,7 @@ function(){
 
 parcoords(
   mtcars
-  ,rownames = F
+  ,rownames = FALSE
   ,brushMode = "1d-multi"
   ,brushPredicate = "OR"
   ,dimensions = list(

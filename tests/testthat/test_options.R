@@ -10,7 +10,7 @@ test_that("options",{
   # will add rownames to the data regardless of rownames parameter
   expect_identical( parcoords(mtcars)$x$data, data.frame(names = rownames(mtcars),mtcars,stringsAsFactors=F ))
   # make sure rownames is passed through
-  expect_true( !parcoords( data.frame(), rownames=F )$x$options$rownames )
+  expect_true( !parcoords( data.frame(), rownames=FALSE )$x$options$rownames )
 
   # check brushmode
   #   this is designed to be flexible and forgiving
@@ -47,7 +47,7 @@ test_that("options",{
   expect_equal( parcoords( data.frame(), alpha = 0.2 )$x$options$alpha, 0.2)
 
   # check that queue= T becomes mode = "queue"
-  expect_match( parcoords( data.frame(), queue = T )$x$options$mode, "queue" )
+  expect_match( parcoords( data.frame(), queue = TRUE )$x$options$mode, "queue" )
   #   and that when queue is null does not overwrite mode
   expect_match( parcoords( data.frame(), queue = NULL, mode="queue" )$x$options$mode, "queue" )
 
