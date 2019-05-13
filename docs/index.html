@@ -5,11 +5,11 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>htmlwidget for d3.js parallel coordinates chart • parcoords</title>
+<title>'Htmlwidget' for 'd3.js' Parallel Coordinates Chart • parcoords</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="htmlwidget for d3.js parallel coordinates chart">
+<script src="pkgdown.js"></script><meta property="og:title" content="'Htmlwidget' for 'd3.js' Parallel Coordinates Chart">
 <meta property="og:description" content="Create interactive parallel coordinates charts with this 'htmlwidget'
     wrapper for 'd3.js' &lt;https://github.com/BigFatDog/parcoords-es&gt;
     {'parallel-coordinates'}.">
@@ -69,11 +69,15 @@
       
       </header><div class="row">
   <div class="contents col-md-9">
+
+
 <div id="parcoords--htmlwidget-for-d3-parallel-coordinates-chart" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#parcoords--htmlwidget-for-d3-parallel-coordinates-chart" class="anchor"></a>parcoords | htmlwidget for d3 parallel-coordinates chart</h1></div>
 <p><code>parcoords</code> gives <code>R</code> users the very well designed and interactive <a href="https://github.com/BigFatDog/parcoords-es"><code>parallel-coordinates</code></a> chart for <code>d3</code> with the infrastructure, flexibility, and robustness of <a href="http://htmlwidgets.org"><code>htmlwidgets</code></a>.</p>
-<pre><code># not on CRAN so use devtools::install_github to try it out
+<pre><code># from CRAN
+# install.packages("parcoords")
+# for the latest release
 # devtools::install_github("timelyportfolio/parcoords")
 
 library(parcoords)
@@ -91,6 +95,7 @@ parcoords(
 <p>Please note that the ‘parcoords’ project is released with a <a href="CODE_OF_CONDUCT.html">Contributor Code of Conduct</a>. By contributing to this project, you agree to abide by its terms. Please let’s be friendly and welcoming.</p>
 </div>
 </div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -124,15 +129,24 @@ parcoords(
 </li>
 <li>Kenton Russell <br><small class="roles"> Author, maintainer </small>  <br><small>(R interface)</small>
 </li>
+<li>Anobel Odisho <br><small class="roles"> Author </small>  <br><small>(R interface guidance, suggestions, testing, review, and feedback)</small>
+</li>
 <li><a href="authors.html">All authors...</a></li>
 </ul>
 </div>
 
-  </div>
+  <div class="dev-status">
+<h2>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://cran.r-project.org/package=parcoords"><img src="https://www.r-pkg.org/badges/version/parcoords" alt="CRAN status"></a></li>
+<li><a href="https://travis-ci.org/timelyportfolio/parcoords"><img src="https://travis-ci.org/timelyportfolio/parcoords.svg?branch=master" alt="Travis build status"></a></li>
+</ul>
+</div>
+</div>
 </div>
 
       <footer><div class="copyright">
-  <p>Developed by Mike Bostock, Kai Chang, Xing Yun, Kenton Russell.</p>
+  <p>Developed by Mike Bostock, Kai Chang, Xing Yun, Kenton Russell, Anobel Odisho.</p>
 </div>
 
 <div class="pkgdown">
