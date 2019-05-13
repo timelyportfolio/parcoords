@@ -6,7 +6,9 @@
 `parcoords` gives `R` users the very well designed and interactive [`parallel-coordinates`](https://github.com/BigFatDog/parcoords-es) chart for `d3` with the infrastructure, flexibility, and robustness of [`htmlwidgets`](http://htmlwidgets.org).
 
 ```
-# not on CRAN so use devtools::install_github to try it out
+# from CRAN
+# install.packages("parcoords")
+# for the latest release
 # devtools::install_github("timelyportfolio/parcoords")
 
 library(parcoords)
