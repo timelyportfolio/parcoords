@@ -11,6 +11,8 @@ Authors@R: c(
       https://github.com/BigFatDog/parcoords-es"),
     person("Kenton","Russell", role = c("aut","cre"), comment = "R interface",
       email = "kent.russell@timelyportfolio.com"),
+    person("Anobel","Odisho", role = c("aut"), comment = "R interface guidance, suggestions, testing, review, and feedback",
+      email = "Anobel.Odisho@ucsf.edu"),
     person("Mark","Albrecht",role = c("ctb"),comment = "Shiny output and example",
       email="malbrech@nmdp.org")
   )
