@@ -1,15 +1,14 @@
-#' htmlwidget for d3.js parallel-coordinates
+#' Interactive 'd3.js' Parallel Coordinates Chart
 #'
 #' Create interactive parallel coordinates charts with this htmlwidget
-#' wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}{parallel-coordinates}.
+#' wrapper for d3.js \href{https://github.com/bigfatdog/parcoords-es}{parallel-coordinates}.
 #'
 #' @param data  data.frame with data to use in the chart
 #' @param rownames logical use rownames from the data.frame in the chart.  Regardless of
 #'          this parameter, we will append rownames to the data that we send to JavaScript.
 #'          If \code{rownames} equals \code{FALSE}, then we will use parallel coordinates
 #'          to hide it.
-#' @param color see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_color}{parcoords.color( color )}.
-#'          Color can be a single color as rgb or hex.  For a color function,
+#' @param color Color can be a single color as rgb or hex.  For a color function,
 #'          provide a
 #'          \code{list( colorScale = , colorBy = , colorSheme =, colorInterpolator = , colorDomain =)}
 #'          where colorScale is the name of the
@@ -35,15 +34,13 @@
 #'          this will change automatically and might result in unexpected
 #'          behavior.
 #' @param composite foreground context's composite type
-#'          see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_composite}{parcoords.composite}
 #' @param alpha opacity from 0 to 1 of the polylines
 #' @param queue logical (default FALSE) to change rendering mode to queue for
 #'          progressive rendering.  Usually \code{ queue = T } for very large datasets.
 #' @param mode string see\code{queue} above; \code{ queue = T } will set
 #'          \code{ mode = "queue" }
-#' @param rate integer rate at which render will queue; see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_rate}{}
-#'          for a full discussion and some recommendations
-#' @param dimensions \code{list} to customize axes dimensions.
+#' @param rate integer rate at which render will queue
+#' @param dimensions \code{list} to customize axes dimensions
 #' @param bundleDimension character string for the column or variable on which to bundle
 #' @param bundlingStrength numeric value between 0 and 1 for the strength of the bundling.  This value will
 #'          not affect the parallel coordinates if \code{bundleDimension} is not set and will be ignored.

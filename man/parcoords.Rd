@@ -2,7 +2,7 @@
 % Please edit documentation in R/parcoords.R
 \name{parcoords}
 \alias{parcoords}
-\title{htmlwidget for d3.js parallel-coordinates}
+\title{Interactive 'd3.js' Parallel Coordinates Chart}
 \usage{
 parcoords(data = NULL, rownames = TRUE, color = NULL,
   brushMode = NULL, brushPredicate = "and", alphaOnBrushed = NULL,
@@ -21,8 +21,7 @@ this parameter, we will append rownames to the data that we send to JavaScript.
 If \code{rownames} equals \code{FALSE}, then we will use parallel coordinates
 to hide it.}
 
-\item{color}{see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_color}{parcoords.color( color )}.
-Color can be a single color as rgb or hex.  For a color function,
+\item{color}{Color can be a single color as rgb or hex.  For a color function,
 provide a
 \code{list( colorScale = , colorBy = , colorSheme =, colorInterpolator = , colorDomain =)}
 where colorScale is the name of the
@@ -54,8 +53,7 @@ the logic forthe join with multiple brushes.}
 this will change automatically and might result in unexpected
 behavior.}
 
-\item{composite}{foreground context's composite type
-see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_composite}{parcoords.composite}}
+\item{composite}{foreground context's composite type}
 
 \item{alpha}{opacity from 0 to 1 of the polylines}
 
@@ -65,10 +63,9 @@ progressive rendering.  Usually \code{ queue = T } for very large datasets.}
 \item{mode}{string see\code{queue} above; \code{ queue = T } will set
 \code{ mode = "queue" }}
 
-\item{rate}{integer rate at which render will queue; see \href{https://github.com/syntagmatic/parallel-coordinates\#parcoords_rate}{}
-for a full discussion and some recommendations}
+\item{rate}{integer rate at which render will queue}
 
-\item{dimensions}{\code{list} to customize axes dimensions.}
+\item{dimensions}{\code{list} to customize axes dimensions}
 
 \item{bundleDimension}{character string for the column or variable on which to bundle}
 
@@ -114,7 +111,7 @@ and within Shiny output bindings.
 }
 \description{
 Create interactive parallel coordinates charts with this htmlwidget
-wrapper for d3.js \href{http://syntagmatic.github.io/parallel-coordinates/}{parallel-coordinates}.
+wrapper for d3.js \href{https://github.com/bigfatdog/parcoords-es}{parallel-coordinates}.
 }
 \examples{
 \dontrun{

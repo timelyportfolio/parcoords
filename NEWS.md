@@ -1,4 +1,4 @@
-# parcoords 0.6.0
+# parcoords 1.0.0
 
 * update source JavaScript library to modular [parcoords-es](https://github.com/bigfatdog/parcoords-es) to stay current with [d3](https://github.com/d3/d3) and avoid conflicts with other versions of `d3`
 
@@ -9,3 +9,7 @@
 * allow horizontal scrolling when parcoords bigger than screen
 
 * add center method for horizontally centering parcoords based on a column/dimension
+
+* add snapshot method to export chart in current state to png
+
+* add experimental Breshenham mode `mode = 'tiled'`
