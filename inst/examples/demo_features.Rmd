@@ -1,0 +1,403 @@
+---
+title: "parcoords Features"
+description: |
+  Demonstrate new and old features of parcoords.
+author:
+  - name: Kenton Russell
+date: "`r Sys.Date()`"
+output: radix::radix_article
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, cache = FALSE)
+```
+
+For most of the examples we will use `colon` data from the `survival` package.  Since we will reuse multiple times, let's add as a global to reduce the size of our ultimate file.
+
+```{r results=FALSE, echo=TRUE}
+library(survival)
+data(colon)
+```
+
+```{r echo=FALSE, results='asis'}
+cat(sprintf('
+<script>
+  var colon = %s;
+</script>
+',
+jsonlite::toJSON(colon, dataframe='columns', na='null')
+))
+```
+
+# Color
+
+We can now color by both discrete and continuous variables.  Let's start by exploring some of our options with discrete or categorical coloring.
+
+```{r, layout="l-body-outset", fig.width=7, echo=TRUE}
+library(parcoords)
+
+pc <- parcoords(
+  data = colon,
+  color = list(
+    colorBy = "rx"
+  ),
+  brushMode = "1d",
+  rownames = FALSE,
+  alpha = 0.1,
+  # requires withD3 for now but will change so this is not necessary
+  #  after some iteration since this will pollute global namespace
+  #  and potenially conflict with other htmlwidgets using a different version of d3
+  withD3 = TRUE,
+  width = 700
+)
+```
+
+```{r}
+pc$x$data <- htmlwidgets::JS("colon")
+pc
+```
+
+We have the full range of color schemes from [`d3-scale-chromatic`](https://github.com/d3/d3-scale-chromatic#api-reference) available for use with `parcoords`.  The default is `schemeCategory10`.  Let's see `schemeAccent`.
+
+```{r, layout="l-body-outset", fig.width=7, echo=TRUE}
+library(parcoords)
+
+pc <- parcoords(
+  data = colon,
+  color = list(
+    colorBy = "rx",
+    colorScheme = "schemeAccent"
+  ),
+  brushMode = "1d",
+  rownames = FALSE,
+  alpha = 0.1,
+  # requires withD3 for now but will change so this is not necessary
+  #  after some iteration since this will pollute global namespace
+  #  and potenially conflict with other htmlwidgets using a different version of d3
+  withD3 = TRUE,
+  width = 700
+)
+```
+
+
+```{r}
+pc$x$data <- htmlwidgets::JS("colon")
+pc
+```
+
+Although the arguments for color have been changed, discrete coloring has always been available in `parcoords`.  However, a user might like to color by a continuous variable/column.  In this case, we now have a `colorScale` argument.  Choosing `colorScale = "scaleSequential"` gives us the ability to color with continuous data, and `interpolateViridis` will be the default.  Applying sequential scale to `time` makes sense with the `colon` data.
+
+```{r, layout="l-body-outset", fig.width=7, echo=TRUE}
+library(parcoords)
+
+pc <- parcoords(
+  data = colon,
+  color = list(
+    colorBy = "time",
+    colorScale = "scaleSequential"
+  ),
+  brushMode = "1d",
+  rownames = FALSE,
+  alpha = 0.1,
+  # requires withD3 for now but will change so this is not necessary
+  #  after some iteration since this will pollute global namespace
+  #  and potenially conflict with other htmlwidgets using a different version of d3
+  withD3 = TRUE,
+  width = 700
+)
+```
+
+
+```{r}
+pc$x$data <- htmlwidgets::JS("colon")
+pc
+```
+
+# Bigger Data
+
+The `colon` dataset is not by any means "big", but even with its `r nrow(colon)` rows and `r ncol(colon)` columns we will see some slight lag as we brush.  `parcoords` provides [`queue`](https://github.com/syntagmatic/parallel-coordinates#parcoords_mode) mode with a `rate` which renders the chart progressively to prevent blocking.  Below we will use the `queue` feature with a `rate=50` meaning 50 lines will be drawn at a time.
+
+```{r, layout="l-body-outset", fig.width=7, echo=TRUE}
+library(parcoords)
+
+pc <- parcoords(
+  data = colon,
+  color = list(
+    colorBy = "time",
+    colorScale = "scaleSequential"
+  ),
+  mode = "queue",
+  rate = 50,
+  brushMode = "1d",
+  rownames = FALSE,
+  alpha = 0.1,
+  # requires withD3 for now but will change so this is not necessary
+  #  after some iteration since this will pollute global namespace
+  #  and potenially conflict with other htmlwidgets using a different version of d3
+  withD3 = TRUE,
+  width = 700
+)
+```
+
+```{r}
+pc$x$data <- htmlwidgets::JS("colon")
+pc
+```
+
+When using `parcoords` with bigger data, we face the problem of clutter.  Methods for dealing with clutter have been discussed and proposed in academic research, but unfortunately most of these are not provided as open source code.  Implementing these methods varies in complexity and approach.  The `parcoords` JavaScript library originally offered bundling as one solution to the clutter problem, but this was not offered on the R implementation.  Now `bundleDimension`, `bundlingStrength`, and `smoothness` are fully supported in R.
+
+
+```{r, layout="l-body-outset", fig.width=7, echo=TRUE}
+library(parcoords)
+
+pc <- parcoords(
+  data = colon,
+  color = list(
+    colorBy = "time",
+    colorScale = "scaleSequential"
+  ),
+  bundleDimension = "status",
+  bundlingStrength = 1,
+  smoothness = 0.1,
+  brushMode = "1d",
+  rownames = FALSE,
+  alpha = 0.2,
+  # requires withD3 for now but will change so this is not necessary
+  #  after some iteration since this will pollute global namespace
+  #  and potenially conflict with other htmlwidgets using a different version of d3
+  withD3 = TRUE,
+  width = 700
+)
+```
+
+```{r}
+pc$x$data <- htmlwidgets::JS("colon")
+pc
+```
+
+One method proposed is tiling the lines from parallel coordinates with the Bresenham algorithm.  I have partially implemented this technique in parallel coordinates using color.  Using opacity instead of or in combination with color is fairly easy to implement.
+
+```{r, layout="l-body-outset", fig.width=7, echo=TRUE}
+library(parcoords)
+
+pc <- parcoords(
+  data = colon,
+  mode = "tiled",
+  brushMode = "1d",
+  reorderable = TRUE,
+  rownames = FALSE,
+  width = 700
+)
+```
+
+```{r}
+pc$x$data <- htmlwidgets::JS("colon")
+pc$x$options$resolution = 50
+pc
+```
+
+# Show Unbrushed Lines
+
+`parcoords` by default will hide lines that are not brushed.  This means we lose some information.  Preserving these lines might help a user understand the relationships.  The `alphaOnBrushed` argument allows a user to specify the opacity of unbrushed lines.
+
+```{r, layout="l-body-outset", fig.width=7, echo=TRUE}
+library(parcoords)
+
+pc <- parcoords(
+  data = colon,
+  color = list(
+    colorBy = "time",
+    colorScale = "scaleSequential"
+  ),
+  alphaOnBrushed = 0.2,
+  mode = "queue",
+  rate = 50,
+  brushMode = "1d",
+  rownames = FALSE,
+  alpha = 0.5,
+  # requires withD3 for now but will change so this is not necessary
+  #  after some iteration since this will pollute global namespace
+  #  and potenially conflict with other htmlwidgets using a different version of d3
+  withD3 = TRUE,
+  width = 700
+)
+```
+
+```{r}
+pc$x$data <- htmlwidgets::JS("colon")
+pc
+```
+
+# Lots of Columns
+
+Data with multiple columns were not handled well in the prior version of `parcoords`.  The new version allows horizontal scrolling of parallel coordinates when size expands beyond the width of the page or container.  In addition, there is now an ability to center based on a column.
+
+
+```{r, layout="l-body-outset", fig.width=7, echo=TRUE}
+library(parcoords)
+
+pc <- parcoords(
+  data = colon,
+  color = list(
+    colorBy = "time",
+    colorScale = "scaleSequential"
+  ),
+  alphaOnBrushed = 0.2,
+  mode = "queue",
+  rate = 50,
+  brushMode = "1d",
+  rownames = FALSE,
+  alpha = 0.5,
+  # requires withD3 for now but will change so this is not necessary
+  #  after some iteration since this will pollute global namespace
+  #  and potenially conflict with other htmlwidgets using a different version of d3
+  withD3 = TRUE,
+  width = 1300,
+  elementId = "parcoords-center-example"
+)
+```
+
+```{r}
+pc$x$data <- htmlwidgets::JS("colon")
+# doesn't work here since the radix document gets resized after center
+# pc$x$tasks <- list(htmlwidgets::JS("
+#   function(){
+#     debugger;
+#     this.parcoords.center('adhere');
+#   }
+# "))
+htmltools::tagList(
+  htmltools::tags$script(
+"
+function centerPC() {
+  var column = event.target.value;
+  var pc = HTMLWidgets.find('#parcoords-center-example').instance.parcoords;
+  pc.center(column);
+}
+"    
+  ),
+  htmltools::tags$label(
+    "Center on:",
+    htmltools::tags$select(
+      lapply(colnames(colon), function(d){htmltools::tags$option(value=d,d)}),
+      onchange = "centerPC()"
+    )
+  ),
+  pc
+)
+```
+
+A user also might like to just hide columns to focus their analysis.  The new parallel coordinates now has `hide` and `unhide` methods that we can use with or without Shiny.  Currently, they don't work well with brushes, but this will be fixed.
+
+```{r, layout="l-body-outset", fig.width=7, echo=TRUE}
+library(parcoords)
+
+pc <- parcoords(
+  data = colon,
+  color = list(
+    colorBy = "time",
+    colorScale = "scaleSequential"
+  ),
+  alpha = 0.5,
+  # requires withD3 for now but will change so this is not necessary
+  #  after some iteration since this will pollute global namespace
+  #  and potenially conflict with other htmlwidgets using a different version of d3
+  withD3 = TRUE,
+  width = 700,
+  elementId = "parcoords-hide-example"
+)
+```
+
+```{r}
+pc$x$data <- htmlwidgets::JS("colon")
+
+htmltools::tagList(
+  htmltools::tags$script(
+"
+function hidePC() {
+  var chosen = [];
+  var options = options = event.target.querySelectorAll('option');
+  Array.prototype.slice.call(options).forEach(function(d) {if(d.selected){chosen.push(d.value)}})
+  var pc = HTMLWidgets.find('#parcoords-hide-example').instance.parcoords;
+  HTMLWidgets.parcoordsWidget.methods.hide.apply(pc, [chosen]);
+}
+"    
+  ),
+  htmltools::tags$label(
+    "Hide Columns:",
+    htmltools::tags$select(
+      lapply(c("names",colnames(colon)), function(d){htmltools::tags$option(value=d,d)}),
+      onchange = "hidePC()",
+      multiple = "true"
+    )
+  ),
+  pc
+)
+```
+
+# Histograms
+
+work-in-progress
+
+
+# Special Treatment of Categorical Columns
+
+work-in-progress
+
+
+# Change Line with Mouse
+
+work-in-progress, but will need some guidance here.  With significant overlap in lines, determining the intended target line will be difficult.  There is limited ability to highlight and mark lines programatically, but I don't think this meets the requirement.
+
+
+# Snapshot
+
+The prior version of parallel coordinates had some very basic support for capturing the chart as a static image.  However, the functionality was not complete, and the implementation was buggy.  Now, taking snapshots of the parallel coordinates chart is available through JavaScript and R.  The resulting image will also record the current state of brushes.
+
+```{r, layout="l-body-outset", fig.width=7, echo=TRUE}
+library(parcoords)
+
+pc <- parcoords(
+  data = colon,
+  color = list(
+    colorBy = "time",
+    colorScale = "scaleSequential"
+  ),
+  alpha = 0.5,
+  brushMode = "1d",
+  mode = "queue",
+  rate = 50,
+  # requires withD3 for now but will change so this is not necessary
+  #  after some iteration since this will pollute global namespace
+  #  and potenially conflict with other htmlwidgets using a different version of d3
+  withD3 = TRUE,
+  width = 700,
+  elementId = "parcoords-snapshot-example"
+)
+```
+
+```{r}
+pc$x$data <- htmlwidgets::JS("colon")
+
+htmltools::tagList(
+  htmltools::tags$script(
+"
+function snapshotPC() {
+  var pc = HTMLWidgets.find('#parcoords-snapshot-example').instance.parcoords;
+  pc.snapshot();
+}
+"    
+  ),
+  htmltools::tags$button(
+    "snapshot",
+    onclick = "snapshotPC()"
+  ),
+  pc
+)
+```
+
+
+
+# Conclusion
+
+I hope this represents meaningful progress toward expectations.  I look forward to feedback to improve and iterate.

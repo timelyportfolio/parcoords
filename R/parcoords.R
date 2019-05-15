@@ -10,7 +10,7 @@
 #'          to hide it.
 #' @param color Color can be a single color as rgb or hex.  For a color function,
 #'          provide a
-#'          \code{list( colorScale = , colorBy = , colorSheme =, colorInterpolator = , colorDomain =)}
+#'          \code{list( colorScale = , colorBy = , colorScheme =, colorInterpolator = , colorDomain =)}
 #'          where colorScale is the name of the
 #'          \href{https://github.com/d3/d3-scale/blob/master/README.md#sequential-scales}{d3-scale} such as
 #'          \code{scaleOrdinal} or \code{scaleSequential},

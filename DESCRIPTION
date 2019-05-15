@@ -35,5 +35,7 @@ Suggests:
     htmltools,
     knitr,
     shiny,
-    testthat
+    testthat,
+    rmarkdown
 RoxygenNote: 6.1.1
+VignetteBuilder: knitr

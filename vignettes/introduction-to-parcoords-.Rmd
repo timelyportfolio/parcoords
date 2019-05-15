@@ -1,0 +1,223 @@
+---
+title: "Introduction to 'parcoords'"
+author: "Kenton Russell"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7
+)
+```
+
+`parcoords` provides an interactive view ([`parcoords-es`](https://github.com/bigfatdog/parcoords-es)) of multivariate data sets that fully integrates with `Shiny` and `crosstalk`.
+
+## Quick Example
+
+The default view provides limited interactivity.  Through various arguments to `parcoords`, we can provide a more immersive customized experience.
+
+```{r}
+library(parcoords)
+
+parcoords(mtcars, height = 450)
+```
+
+## Options
+
+
+### Brushing
+
+We have multiple brush types available through the `brushMode` argument, which allow a user the ability to filter/select the data.
+
+```{r}
+library(parcoords)
+
+parcoords(
+  mtcars,
+  brushMode = '1D-axes', # "1D-axes", "1D-axes-multi", or "2D-strums" 
+  height = 500
+)
+```
+
+In addition to the brush mode, we have some other supporting arguments for additional customization, such as `brushPredicate` and `alphaOnBrushed`.  Contrast with the above chart to see the differences in behavior.
+
+```{r}
+library(parcoords)
+
+parcoords(
+  mtcars,
+  brushMode = '1D-axes',
+  brushPredicate = "or", # "and" "or"
+  alphaOnBrushed = 0.3,
+  height = 500
+)
+```
+
+### Color
+
+Color can be a single color as `rgb` or `hex` value.
+
+```{r}
+library(parcoords)
+
+parcoords(
+  mtcars,
+  color = "#3e3",
+  height = 500
+)
+```
+
+We can also control color with a `function` by providing a `list( colorScale = , colorBy = , colorScheme =, colorInterpolator = , colorDomain =)` where `colorScale` is the name of the [d3-scale](https://github.com/d3/d3-scale) such as `scaleOrdinal` or `scaleSequential` and `colorBy` is the column name from the data to determine color. If appplying color to a discrete or ordinal variable then please also supply colorScheme, such as [`schemCategory10`](https://github.com/d3/d3-scale-chromatic#schemeCategory10). If applying color to a continuous variable then please also supply `colorInterpolator` as the name of the d3 interpolator, such as [`interpolateViridis`](https://github.com/d3/d3-scale-chromatic#interpolateViridis). **If using a d3 color scale, then make sure to use the argument `withD3 = TRUE`.**  Hopefully, the examples below help clarify the concept.
+
+```{r}
+library(parcoords)
+
+parcoords(
+  mtcars,
+  color = list(
+    # discrete or categorical column
+    colorScale = "scaleOrdinal",
+    colorBy = "cyl",
+    colorScheme = "schemeCategory10"
+  ),
+  withD3 = TRUE,
+  height = 500
+)
+```
+
+For coloring with a continuous variable, the `list` will be slightly different with `colorScale = 'scaleSequential'` as the most likely option.  `interpolateViridis` is the default interpolator, and we use `interpolateMagma` below.
+
+```{r}
+library(parcoords)
+
+parcoords(
+  mtcars,
+  color = list(
+    # continuous variable
+    colorScale = "scaleSequential",
+    colorBy = "mpg",
+    colorInterpolator = "interpolateMagma"
+  ),
+  withD3 = TRUE,
+  height = 500
+)
+```
+
+### Bundling
+
+Bundling can help with bigger data sets.  For the sake of size, we will continue to use with `mtcars` below.  To see the effect, you might like to try with `survival::colon` or `ggplot2::diamonds`.
+
+```{r}
+library(parcoords)
+
+parcoords(
+  mtcars,
+  bundleDimension = "cyl",
+  bundlingStrength = 0.5,
+  smoothness = 0.2,
+  height = 500
+)
+```
+
+### Queue and Rate
+
+With larger (> 1000 rows) datasets, interactivity can slow dramatically unless you use `queue = TRUE` with `rate`, which will require a little experimentation to get right.  As above, we'll use with `mtcars`, but really you should only need these options with much larger datasets.
+
+```{r}
+library(parcoords)
+
+parcoords(
+  mtcars,
+  brushMode = "1D-axes",
+  queue = TRUE,
+  rate = 2, # probably will be bigger (15 - 100) than this in real use
+  height = 500
+)
+```
+
+### Tiling Mode
+
+I have included `mode = 'tiled'` to experiment with the technique proposed in 
+
+> Tile-based parallel coordinates and its application in financial
+visualization
+
+    Jamal Alsakran, Ye Zhao, and Xinlei Zhao
+
+**I would love feedback on this for improvement or suggestions**.  While the technique is designed for larger datasets, this code has not been optimized and does not use a cache, so it actually slows down as the data grows larger.  This option does not make sense with `mtcars` but for example purposes we will continue to use this smaller dataset.
+
+
+```{r}
+library(parcoords)
+
+parcoords(
+  mtcars,
+  mode = "tiled",
+  brushMode = "1D-axes",
+  height = 500
+)
+```
+
+
+## Methods
+
+The package provides some helper methods for use in standalone or `Shiny` contexts.  For instance, we can use the snapshot to provide a `png` export of the current state of the parallel coordinates chart.
+
+### Snapshot
+
+The prior version of parallel coordinates had some very basic support for capturing the chart as a static image.  However, the functionality was not complete, and the implementation was buggy.  Now, taking snapshots of the parallel coordinates chart is available through JavaScript and R.  The resulting image will also record the current state of brushes.
+
+```{r}
+library(parcoords)
+
+pc <- parcoords(
+  data = mtcars,
+  color = list(
+    colorBy = "hp",
+    colorScale = "scaleSequential"
+  ),
+  alpha = 0.5,
+  brushMode = "1d",
+  # requires withD3 for now but will change so this is not necessary
+  #  after some iteration since this will pollute global namespace
+  #  and potenially conflict with other htmlwidgets using a different version of d3
+  withD3 = TRUE,
+  elementId = "parcoords-snapshot-example"
+)
+
+htmltools::tagList(
+  htmltools::tags$script(
+"
+function snapshotPC() {
+  var pc = HTMLWidgets.find('#parcoords-snapshot-example').instance.parcoords;
+  pc.snapshot();
+}
+"    
+  ),
+  htmltools::tags$button(
+    "snapshot",
+    onclick = "snapshotPC()"
+  ),
+  pc
+)
+```
+
+### Proxy Methods for Shiny Use
+
+Similar to `leaflet` and `plotly`, `parcoords` offers proxy methods to interact with parallel coordinates in Shiny without a full re-render.  Currently, the following functions (namespaced by `pc*`) are available.
+
+- `pcFilter`
+- `pcCenter`
+- `pcSnapshot`
+- `pcHide`
+- `pcUnhide`
+- `pcSnapshot`
+
+See ?`parcoords-shiny` for some examples.
