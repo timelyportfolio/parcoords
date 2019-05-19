@@ -82,7 +82,6 @@
 #'   # various ways to change color
 #'   #   in these all lines are the specified color
 #'   parcoords( mtcars, color = "green" )
-#'   parcoords( mtcars, color=RColorBrewer::brewer.pal(3,"BuPu")[3] )
 #'   parcoords( mtcars, color = "#f0c" )
 #'   #   in these we supply a function for our color
 #'   parcoords(
