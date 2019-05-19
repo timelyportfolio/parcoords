@@ -133,10 +133,8 @@ if(interactive()) {
     )
     , withD3 = TRUE
   )
-  ### be careful; this might strain your system #######
-  ###                                           #######
-  library(ggplot2)
-  data( diamonds, package = "ggplot2" )
+
+  if(require('ggplot2', quietly = TRUE)) {
   parcoords(
     diamonds
     ,rownames = FALSE
@@ -150,6 +148,7 @@ if(interactive()) {
     )
     ,withD3 = TRUE
   )
+  }
 }
 library(parcoords)
 

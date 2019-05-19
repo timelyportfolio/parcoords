@@ -93,10 +93,8 @@
 #'     )
 #'     , withD3 = TRUE
 #'   )
-#'   ### be careful; this might strain your system #######
-#'   ###                                           #######
-#'   library(ggplot2)
-#'   data( diamonds, package = "ggplot2" )
+#'
+#'   if(require('ggplot2', quietly = TRUE)) {
 #'   parcoords(
 #'     diamonds
 #'     ,rownames = FALSE
@@ -110,6 +108,7 @@
 #'     )
 #'     ,withD3 = TRUE
 #'   )
+#'   }
 #' }
 #' @example ./inst/examples/examples_dimensions.R
 #'

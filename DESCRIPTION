@@ -32,6 +32,7 @@ Imports:
     utils
 Suggests:
     d3r,
+    ggplot2,
     htmltools,
     knitr,
     shiny,

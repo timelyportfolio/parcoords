@@ -287,7 +287,7 @@ and within Shiny output bindings.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><span class='co'># NOT RUN {</span>
+    <pre class="examples"><div class='input'><span class='kw'>if</span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/interactive'>interactive</a></span>()) {
   <span class='co'># simple example using the mtcars dataset</span>
   <span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/data'>data</a></span>( <span class='no'>mtcars</span> )
   <span class='fu'>parcoords</span>( <span class='no'>mtcars</span> )
@@ -295,20 +295,19 @@ and within Shiny output bindings.</p>
   <span class='co'># various ways to change color</span>
   <span class='co'>#   in these all lines are the specified color</span>
   <span class='fu'>parcoords</span>( <span class='no'>mtcars</span>, <span class='kw'>color</span> <span class='kw'>=</span> <span class='st'>"green"</span> )
-  <span class='fu'>parcoords</span>( <span class='no'>mtcars</span>, <span class='kw'>color</span><span class='kw'>=</span><span class='kw pkg'>RColorBrewer</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/RColorBrewer/topics/ColorBrewer'>brewer.pal</a></span>(<span class='fl'>3</span>,<span class='st'>"BuPu"</span>)[<span class='fl'>3</span>] )
   <span class='fu'>parcoords</span>( <span class='no'>mtcars</span>, <span class='kw'>color</span> <span class='kw'>=</span> <span class='st'>"#f0c"</span> )
   <span class='co'>#   in these we supply a function for our color</span>
   <span class='fu'>parcoords</span>(
     <span class='no'>mtcars</span>
     , <span class='kw'>color</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(
-       <span class='kw'>colorBy</span><span class='kw'>=</span><span class='st'>"cyl"</span>
-       ,<span class='kw'>colorScale</span><span class='kw'>=</span><span class='kw pkg'>htmlwidgets</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/htmlwidgets/topics/JS'>JS</a></span>(<span class='st'>'d3.scaleOrdinal(d3.schemeCategory10)'</span>)
+       <span class='kw'>colorBy</span> <span class='kw'>=</span> <span class='st'>"cyl"</span>
+       , <span class='kw'>colorScale</span> <span class='kw'>=</span> <span class='st'>"scaleOrdinal"</span>
+       , <span class='kw'>colorScheme</span> <span class='kw'>=</span> <span class='st'>"schemeCategory10"</span>
     )
     , <span class='kw'>withD3</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
   )
-  <span class='co'>### be careful; this might strain your system #######</span>
-  <span class='co'>###                                           #######</span>
-  <span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/data'>data</a></span>( <span class='no'>diamonds</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"ggplot2"</span> )
+
+  <span class='kw'>if</span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>require</a></span>(<span class='st'>'ggplot2'</span>, <span class='kw'>quietly</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)) {
   <span class='fu'>parcoords</span>(
     <span class='no'>diamonds</span>
     ,<span class='kw'>rownames</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
@@ -317,28 +316,14 @@ and within Shiny output bindings.</p>
     ,<span class='kw'>queue</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
     ,<span class='kw'>color</span><span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(
        <span class='kw'>colorBy</span><span class='kw'>=</span><span class='st'>"cut"</span>
-       ,<span class='kw'>colorScale</span> <span class='kw'>=</span> <span class='kw pkg'>htmlwidgets</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/htmlwidgets/topics/JS'>JS</a></span>(<span class='st'>"d3.scaleOrdinal(d3.schemeCategory10)"</span>)
+       , <span class='kw'>colorScale</span> <span class='kw'>=</span> <span class='st'>"scaleOrdinal"</span>
+       , <span class='kw'>colorScheme</span> <span class='kw'>=</span> <span class='st'>"schemeCategory10"</span>
     )
     ,<span class='kw'>withD3</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
   )
-  <span class='co'># or if we want to add in a dplyr chain</span>
-  <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>library</a></span>(<span class='no'>dplyr</span>)
-  <span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/data'>data</a></span>( <span class='no'>diamonds</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"ggplot2"</span> )
-  <span class='no'>diamonds</span> <span class='kw'>%&gt;%</span>
-     <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span>( <span class='kw'>carat</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/cut'>cut</a></span>(<span class='no'>carat</span>,<span class='kw'>breaks</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/pretty'>pretty</a></span>(<span class='no'>carat</span>), <span class='kw'>right</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>) ) <span class='kw'>%&gt;%</span>
-     <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span>( <span class='no'>carat</span> ) <span class='kw'>%&gt;%</span>
-     <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span>(-<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='no'>cut</span>,<span class='no'>color</span>,<span class='no'>clarity</span>)) <span class='kw'>%&gt;%</span>
-     <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise_all.html'>summarise_all</a></span>(<span class='fu'><a href='https://dplyr.tidyverse.org/reference/funs.html'>funs</a></span>(<span class='no'>mean</span>),-<span class='no'>carat</span>) <span class='kw'>%&gt;%</span>
-     <span class='fu'>parcoords</span>(
-        <span class='kw'>rownames</span><span class='kw'>=</span> <span class='fl'>FALSE</span>
-        ,<span class='kw'>color</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(
-           <span class='kw'>colorScale</span> <span class='kw'>=</span> <span class='kw pkg'>htmlwidgets</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/htmlwidgets/topics/JS'>JS</a></span>(<span class='st'>'d3.scaleOrdinal(d3.schemeSet3)'</span> )
-          , <span class='kw'>colorBy</span> <span class='kw'>=</span> <span class='st'>"carat"</span>
-        )
-        ,<span class='kw'>brushMode</span> <span class='kw'>=</span> <span class='st'>"1D"</span>
-        ,<span class='kw'>withD3</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
-      )
-<span class='co'># }</span><div class='input'><span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>library</a></span>(<span class='no'>parcoords</span>)
+  }
+}
+<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>library</a></span>(<span class='no'>parcoords</span>)
 
 <span class='fu'>parcoords</span>(
   <span class='no'>mtcars</span>,
@@ -349,25 +334,6 @@ and within Shiny output bindings.</p>
     )
   )
 )
-
-<span class='fu'>parcoords</span>(
-  <span class='no'>mtcars</span>,
-  <span class='kw'>rownames</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>brushMode</span> <span class='kw'>=</span> <span class='st'>"1d"</span>,
-  <span class='kw'>reorderable</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>dimensions</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(
-    <span class='kw'>cyl</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(
-      <span class='kw'>tickValues</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='fl'>4</span>,<span class='fl'>6</span>,<span class='fl'>8</span>)
-    )
-  ),
-  <span class='kw'>tasks</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(
-    <span class='kw pkg'>htmlwidgets</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/htmlwidgets/topics/JS'>JS</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/sprintf'>sprintf</a></span>(
-<span class='st'>[1052 chars quoted with '"']</span>     ,
-      <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/paste'>paste0</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/sort'>sort</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/shQuote'>shQuote</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/colnames'>rownames</a></span>(<span class='no'>mtcars</span>))),<span class='kw'>collapse</span><span class='kw'>=</span><span class='st'>","</span>)
-    ))
-  )
-)
-
 
 <span class='fu'>parcoords</span>(
   <span class='no'>mtcars</span>
