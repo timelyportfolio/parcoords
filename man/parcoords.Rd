@@ -135,6 +135,7 @@ if(interactive()) {
   )
   ### be careful; this might strain your system #######
   ###                                           #######
+  library(ggplot2)
   data( diamonds, package = "ggplot2" )
   parcoords(
     diamonds
@@ -149,24 +150,6 @@ if(interactive()) {
     )
     ,withD3 = TRUE
   )
-  # or if we want to add in a dplyr chain
-  library(dplyr)
-  data( diamonds, package = "ggplot2" )
-  diamonds \%>\%
-     mutate( carat = cut(carat,breaks = pretty(carat), right = FALSE) ) \%>\%
-     group_by( carat ) \%>\%
-     select(-c(cut,color,clarity)) \%>\%
-     summarise_if(is.numeric, mean) \%>\%
-     parcoords(
-        rownames= FALSE
-        ,color = list(
-          colorBy = "carat"
-          , colorScale = "scaleOrdinal"
-          , colorScheme = "schemeSet3"
-        )
-        ,brushMode = "1D"
-        ,withD3 = TRUE
-      )
 }
 library(parcoords)
 
