@@ -1,5 +1,11 @@
 ## Notes
 
+**resubmission 2**
+
+use `if(interactive())` instead of `dontrun` in examples
+
+**resubmission**
+
 > This cannot work: The whole package must be licensed as is with a single 
 license. You have to choose a license that is compatible with the 
 licenses of each part and if required, get permission to relicense from 

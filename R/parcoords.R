@@ -74,7 +74,7 @@
 #' including the R console, within R Markdown documents,
 #' and within Shiny output bindings.
 #' @examples
-#' \dontrun{
+#' if(interactive()) {
 #'   # simple example using the mtcars dataset
 #'   data( mtcars )
 #'   parcoords( mtcars )
@@ -88,8 +88,9 @@
 #'   parcoords(
 #'     mtcars
 #'     , color = list(
-#'        colorBy="cyl"
-#'        ,colorScale=htmlwidgets::JS('d3.scaleOrdinal(d3.schemeCategory10)')
+#'        colorBy = "cyl"
+#'        , colorScale = "scaleOrdinal"
+#'        , colorScheme = "schemeCategory10"
 #'     )
 #'     , withD3 = TRUE
 #'   )
@@ -104,7 +105,8 @@
 #'     ,queue = TRUE
 #'     ,color= list(
 #'        colorBy="cut"
-#'        ,colorScale = htmlwidgets::JS("d3.scaleOrdinal(d3.schemeCategory10)")
+#'        , colorScale = "scaleOrdinal"
+#'        , colorScheme = "schemeCategory10"
 #'     )
 #'     ,withD3 = TRUE
 #'   )
@@ -115,12 +117,13 @@
 #'      mutate( carat = cut(carat,breaks = pretty(carat), right = FALSE) ) %>%
 #'      group_by( carat ) %>%
 #'      select(-c(cut,color,clarity)) %>%
-#'      summarise_all(funs(mean),-carat) %>%
+#'      summarise_if(is.numeric, mean) %>%
 #'      parcoords(
 #'         rownames= FALSE
 #'         ,color = list(
-#'            colorScale = htmlwidgets::JS('d3.scaleOrdinal(d3.schemeSet3)' )
-#'           , colorBy = "carat"
+#'           colorBy = "carat"
+#'           , colorScale = "scaleOrdinal"
+#'           , colorScheme = "schemeSet3"
 #'         )
 #'         ,brushMode = "1D"
 #'         ,withD3 = TRUE

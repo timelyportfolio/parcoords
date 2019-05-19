@@ -1,4 +1,4 @@
-\dontrun{
+if(interactive()) {
   #### filter proxy example ----
 
   library(parcoords)

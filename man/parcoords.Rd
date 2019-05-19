@@ -114,7 +114,7 @@ Create interactive parallel coordinates charts with this htmlwidget
 wrapper for d3.js \href{https://github.com/bigfatdog/parcoords-es}{parallel-coordinates}.
 }
 \examples{
-\dontrun{
+if(interactive()) {
   # simple example using the mtcars dataset
   data( mtcars )
   parcoords( mtcars )
@@ -128,8 +128,9 @@ wrapper for d3.js \href{https://github.com/bigfatdog/parcoords-es}{parallel-coor
   parcoords(
     mtcars
     , color = list(
-       colorBy="cyl"
-       ,colorScale=htmlwidgets::JS('d3.scaleOrdinal(d3.schemeCategory10)')
+       colorBy = "cyl"
+       , colorScale = "scaleOrdinal"
+       , colorScheme = "schemeCategory10"
     )
     , withD3 = TRUE
   )
@@ -144,7 +145,8 @@ wrapper for d3.js \href{https://github.com/bigfatdog/parcoords-es}{parallel-coor
     ,queue = TRUE
     ,color= list(
        colorBy="cut"
-       ,colorScale = htmlwidgets::JS("d3.scaleOrdinal(d3.schemeCategory10)")
+       , colorScale = "scaleOrdinal"
+       , colorScheme = "schemeCategory10"
     )
     ,withD3 = TRUE
   )
@@ -155,12 +157,13 @@ wrapper for d3.js \href{https://github.com/bigfatdog/parcoords-es}{parallel-coor
      mutate( carat = cut(carat,breaks = pretty(carat), right = FALSE) ) \%>\%
      group_by( carat ) \%>\%
      select(-c(cut,color,clarity)) \%>\%
-     summarise_all(funs(mean),-carat) \%>\%
+     summarise_if(is.numeric, mean) \%>\%
      parcoords(
         rownames= FALSE
         ,color = list(
-           colorScale = htmlwidgets::JS('d3.scaleOrdinal(d3.schemeSet3)' )
-          , colorBy = "carat"
+          colorBy = "carat"
+          , colorScale = "scaleOrdinal"
+          , colorScheme = "schemeSet3"
         )
         ,brushMode = "1D"
         ,withD3 = TRUE

@@ -29,7 +29,7 @@ Output and render functions for using sunburst within Shiny
 applications and interactive Rmd documents.
 }
 \examples{
-\dontrun{
+if(interactive()) {
   #### filter proxy example ----
 
   library(parcoords)
