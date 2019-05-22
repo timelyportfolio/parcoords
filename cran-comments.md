@@ -1,5 +1,13 @@
 ## Notes
 
+**resubmission 3**
+
+>several of the examples are still wrapped in \dontrun{}
+please replace with if(interactive()),
+or \donttest{} for lengthy examples (> 5s).
+
+There are no instances of `\dontrun` in the previous submission, so I am resubmitting with no changes.  All examples output either `htmlwidgets` or `shiny` which require `interactive`, so everything is enclosed with `if(interactive())`.  Sorry if I am misunderstanding.
+
 **resubmission 2**
 
 use `if(interactive())` instead of `dontrun` in examples
