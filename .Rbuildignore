@@ -1,3 +1,5 @@
+^LICENSE\.md$
+^CRAN-RELEASE$
 ^cran-comments\.md$
 ^\.travis\.yml$
 ^CODE_OF_CONDUCT\.md$
