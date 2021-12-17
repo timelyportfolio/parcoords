@@ -215,6 +215,7 @@ HTMLWidgets.widget({
         if( x.options.color.constructor.name === "Object" ) {
           var colorScaleType = x.options.color.colorScale  ? x.options.color.colorScale : "scaleOrdinal";
           var colorScaleScheme = x.options.color.colorScheme ? x.options.color.colorScheme: "schemeCategory10";
+          var colorScaleDomain = x.options.color.colorDomain ? x.options.color.colorDomain: null;
           var colorScale;
           // in the case of scaleSequential we will also look for an interpolator
           var colorScaleInterpolator = x.options.color.colorInterpolator  ? x.options.color.colorInterpolator : "interpolateViridis";
@@ -228,10 +229,10 @@ HTMLWidgets.widget({
             );
           } else {
             colorScale = d3[colorScaleType](d3[colorScaleScheme] || colorScaleScheme);
+            if(colorScaleDomain) {
+              colorScale.domain(colorScaleDomain);
+            }
           }
-
-          window.cs = colorScale;
-          console.log(cs.domain())
 
           color = function(d) {
             return colorScale(d[x.options.color.colorBy]);
